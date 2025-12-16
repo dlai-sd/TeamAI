@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TeamAI UI Test Helper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #667eea; }
+        h2 { color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background: #5568d3; }
+        .success { color: #10b981; font-weight: bold; }
+        .error { color: #ef4444; font-weight: bold; }
+        .info { color: #667eea; }
+        pre {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .token-display {
+            font-size: 10px;
+            word-break: break-all;
+            background: #fef3c7;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 TeamAI UI Testing Helper</h1>
+    
+    <div class="test-section">
+        <h2>1. Set Authentication Token</h2>
+        <p class="info">Token (admin@acmemarketing.com):</p>
+        <div class="token-display" id="tokenDisplay">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnb29nbGUtYWRtaW4tMTIzIiwiZXhwIjoxNzY1ODkxMTU3LCJpYXQiOjE3NjU4ODkzNTcsInR5cGUiOiJhY2Nlc3MifQ.vntbRvO9ESf19x9D8RF0kagA0bdR9W1E51y6UUo3xmo</div>
+        <button onclick="setToken()">Set Token in localStorage</button>
+        <button onclick="clearToken()">Clear Token</button>
+        <button onclick="checkToken()">Check Current Token</button>
+        <div id="tokenStatus"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test API Endpoints</h2>
+        <button onclick="testMe()">Test GET /auth/me</button>
+        <button onclick="testInvites()">Test GET /invites</button>
+        <div id="apiResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Navigation Tests</h2>
+        <button onclick="goTo('/')">Go to Root (should redirect)</button>
+        <button onclick="goTo('/login')">Go to Login Page</button>
+        <button onclick="goTo('/dashboard')">Go to Dashboard (protected)</button>
+        <button onclick="goTo('/admin/invites')">Go to Invites (admin only)</button>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        const ADMIN_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnb29nbGUtYWRtaW4tMTIzIiwiZXhwIjoxNzY1ODkxMTU3LCJpYXQiOjE3NjU4ODkzNTcsInR5cGUiOiJhY2Nlc3MifQ.vntbRvO9ESf19x9D8RF0kagA0bdR9W1E51y6UUo3xmo';
+
+        function log(message, type = 'info') {
+            const div = document.getElementById('testResults');
+            const timestamp = new Date().toLocaleTimeString();
+            div.innerHTML = `<div class="${type}">[${timestamp}] ${message}</div>` + div.innerHTML;
+        }
+
+        function setToken() {
+            localStorage.setItem('access_token', ADMIN_TOKEN);
+            document.getElementById('tokenStatus').innerHTML = '<p class="success">✅ Token set in localStorage</p>';
+            log('Token stored in localStorage', 'success');
+        }
+
+        function clearToken() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            document.getElementById('tokenStatus').innerHTML = '<p class="info">Token cleared</p>';
+            log('Token cleared from localStorage', 'info');
+        }
+
+        function checkToken() {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                document.getElementById('tokenStatus').innerHTML = `<p class="success">✅ Token exists: ${token.substring(0, 50)}...</p>`;
+                log('Token found in localStorage', 'success');
+            } else {
+                document.getElementById('tokenStatus').innerHTML = '<p class="error">❌ No token found</p>';
+                log('No token in localStorage', 'error');
+            }
+        }
+
+        async function testMe() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                document.getElementById('apiResults').innerHTML = '<p class="error">❌ No token set. Click "Set Token" first.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('apiResults').innerHTML = `
+                        <p class="success">✅ GET /auth/me - SUCCESS</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    log(`/auth/me: ${data.email} (${data.role})`, 'success');
+                } else {
+                    document.getElementById('apiResults').innerHTML = `<p class="error">❌ Error: ${JSON.stringify(data)}</p>`;
+                    log(`/auth/me failed: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                document.getElementById('apiResults').innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                log(`/auth/me error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testInvites() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                document.getElementById('apiResults').innerHTML = '<p class="error">❌ No token set. Click "Set Token" first.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/invites`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('apiResults').innerHTML = `
+                        <p class="success">✅ GET /invites - SUCCESS (${data.length} invites)</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    log(`/invites: Found ${data.length} invitations`, 'success');
+                } else {
+                    document.getElementById('apiResults').innerHTML = `<p class="error">❌ Error: ${JSON.stringify(data)}</p>`;
+                    log(`/invites failed: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                document.getElementById('apiResults').innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+                log(`/invites error: ${error.message}`, 'error');
+            }
+        }
+
+        function goTo(path) {
+            log(`Navigating to ${path}`, 'info');
+            window.location.href = `http://localhost:3000${path}`;
+        }
+
+        // Auto-check token on load
+        window.onload = checkToken;
+    </script>
+</body>
+</html>

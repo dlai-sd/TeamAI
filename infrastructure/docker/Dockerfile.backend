@@ -1,0 +1,64 @@
+# Development stage - with hot reload support
+FROM python:3.11-slim AS development
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# Copy backend requirements
+COPY backend/requirements.txt backend/
+
+# Install Python dependencies from requirements.txt
+RUN cd backend && pip install -r requirements.txt
+
+# Set Python path
+ENV PYTHONPATH=/app/backend
+
+# Expose port
+EXPOSE 8000
+
+# Default command (can be overridden in docker-compose)
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+# Production stage - optimized, no dev dependencies
+FROM python:3.11-slim AS production
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy backend requirements
+COPY backend/requirements.txt backend/
+
+# Install production dependencies from requirements.txt
+RUN cd backend && pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY backend/ /app/backend/
+COPY shared/ /app/shared/
+COPY cookbooks/ /app/cookbooks/
+COPY recipes/ /app/recipes/
+
+# Set Python path
+ENV PYTHONPATH=/app/backend
+
+# Create non-root user
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Expose port
+EXPOSE 8000
+
+# Run production server
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

@@ -1,0 +1,112 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: teamai-postgres
+    environment:
+      POSTGRES_DB: teamai
+      POSTGRES_USER: teamai
+      POSTGRES_PASSWORD: teamai_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U teamai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - teamai-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: teamai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - teamai-network
+
+  # Backend API (Development with Hot Reload)
+  backend:
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/Dockerfile.backend
+      target: development
+    container_name: teamai-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://teamai:teamai_dev_password@postgres:5432/teamai
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount source code for hot reload
+      - ./backend:/app/backend:rw
+      - ./shared:/app/shared:rw
+      - ./cookbooks:/app/cookbooks:ro
+      - ./recipes:/app/recipes:ro
+      # Exclude Python cache
+      - /app/backend/__pycache__
+      - /app/backend/.pytest_cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - teamai-network
+    stdin_open: true
+    tty: true
+    command: >
+      sh -c "cd /app/backend &&
+             alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --log-level debug"
+
+  # Frontend (Development with Hot Reload)
+  frontend:
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/Dockerfile.frontend
+      target: development
+    container_name: teamai-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+      - NODE_ENV=development
+    volumes:
+      # Mount source code for hot reload
+      - ./frontend:/app:rw
+      - ./shared:/shared:ro
+      # Exclude node_modules (use container's version)
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - teamai-network
+    stdin_open: true
+    tty: true
+    command: npm run dev -- --host 0.0.0.0 --port 3000
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  teamai-network:
+    driver: bridge

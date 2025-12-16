@@ -1,0 +1,117 @@
+recipe:
+  id: "site-audit"
+  name: "Comprehensive Site Audit"
+  description: "Crawl website, analyze technical SEO issues, generate detailed report"
+  cookbook: "seo-specialist-v1"
+  version: "1.0.0"
+  
+  # Input schema (validated with Pydantic at runtime)
+  inputs:
+    - name: "website_url"
+      type: "string"
+      required: true
+      validation: "url"
+      description: "Target website URL to audit"
+      example: "https://example.com"
+    
+    - name: "max_depth"
+      type: "integer"
+      required: false
+      default: 3
+      range: [1, 10]
+      description: "Maximum crawl depth (number of link levels)"
+    
+    - name: "include_images"
+      type: "boolean"
+      required: false
+      default: true
+      description: "Include image analysis in audit"
+  
+  # Execution workflow (LangGraph DAG)
+  workflow:
+    nodes:
+      # Node 1: Web Crawler
+      - id: "fetch_pages"
+        component: "WebCrawler"
+        description: "Fetch and parse website pages"
+        config:
+          max_pages: "{{ inputs.max_depth * 20 }}"
+          respect_robots: true
+          timeout: 30
+          user_agent: "TeamAI-Bot/1.0"
+        secrets:
+          api_key: "secret:semrush_api_key"  # Fetched from Secret Locker
+        
+      # Node 2: LLM Analysis
+      - id: "analyze_structure"
+        component: "LLMProcessor"
+        description: "Analyze site structure for SEO issues using LLM"
+        config:
+          model: "groq-llama-3.1-8b-instant"
+          fallback_model: "groq-llama-3.3-70b-versatile"
+          temperature: 0.2
+          max_tokens: 2000
+          prompt_template: |
+            You are an expert SEO analyst. Analyze this website structure:
+            
+            {fetch_pages.output}
+            
+            Identify critical issues in these categories:
+            1. Missing or duplicate meta tags (title, description)
+            2. Broken internal/external links
+            3. Duplicate content across pages
+            4. Page load speed issues
+            5. Mobile responsiveness problems
+            6. Missing alt text for images
+            
+            Provide actionable recommendations for each issue.
+        depends_on: ["fetch_pages"]
+      
+      # Node 3: Report Generator
+      - id: "generate_report"
+        component: "ReportGenerator"
+        description: "Generate formatted SEO audit report"
+        config:
+          format: "markdown"
+          template: "seo_audit_template.md"
+          include_sections:
+            - "executive_summary"
+            - "critical_issues"
+            - "recommendations"
+            - "detailed_findings"
+        depends_on: ["analyze_structure"]
+    
+    # Define execution order (directed acyclic graph)
+    edges:
+      - from: "fetch_pages"
+        to: "analyze_structure"
+      - from: "analyze_structure"
+        to: "generate_report"
+    
+    # Final output specification
+    output:
+      type: "report"
+      format: "markdown"
+      source: "generate_report.output"
+      filename: "seo_audit_{website_url}_{timestamp}.md"
+  
+  # Subscription tracking (mandatory for billing)
+  compliance:
+    track_usage: true
+    billable_units: "per_execution"
+    cost_per_unit: 0.50
+    track_metrics:
+      - "execution_time_ms"
+      - "tokens_used"
+      - "pages_crawled"
+  
+  # A/B testing configuration (product differentiator)
+  ab_testing:
+    enabled: true
+    variants:
+      - version: "1.0.0"
+        description: "Original prompt template"
+      - version: "1.1.0-beta"
+        description: "Enhanced prompt with more specific instructions"
+    success_metric: "quality_score"  # Options: quality_score, execution_time, token_cost
+    sample_size: 100

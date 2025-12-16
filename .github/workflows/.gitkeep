@@ -1,0 +1,8 @@
+# GitHub Actions Workflow
+# TODO: Implement CI/CD pipelines
+
+# Planned workflows:
+# - backend-ci.yml: Backend tests, linting, type checking
+# - frontend-ci.yml: Frontend tests, linting, build
+# - agents-ci.yml: Agent component tests
+# - deploy.yml: Deploy to Azure after all tests pass

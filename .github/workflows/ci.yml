@@ -1,0 +1,382 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  REGISTRY: ${{ secrets.ACR_REGISTRY }}
+  BACKEND_IMAGE: teamai-backend
+  FRONTEND_IMAGE: teamai-frontend
+
+jobs:
+  # ========================================
+  # Code Quality Checks
+  # ========================================
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          pip install black isort flake8 mypy pylint
+
+      - name: Format check with Black
+        run: black --check backend/
+
+      - name: Import sorting check
+        run: isort --check-only --profile black backend/
+
+      - name: Lint with Flake8
+        run: flake8 backend/ --max-line-length=88 --extend-ignore=E203,W503
+
+      - name: Type checking with MyPy
+        run: mypy backend/app --ignore-missing-imports
+        continue-on-error: true  # Don't fail on type errors yet
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Lint TypeScript
+        run: cd frontend && npm run lint
+
+      - name: Type check TypeScript
+        run: cd frontend && npm run type-check
+        continue-on-error: true
+
+  # ========================================
+  # Security Scanning
+  # ========================================
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install security tools
+        run: |
+          pip install bandit safety detect-secrets
+
+      - name: Run Bandit (Python security)
+        run: bandit -r backend/app -c .bandit.yml
+
+      - name: Check dependencies (Safety)
+        run: |
+          pip install -r backend/requirements.txt || true
+          safety check --json
+        continue-on-error: true  # Don't fail on low-severity issues
+
+      - name: Detect secrets in code
+        run: detect-secrets scan --baseline .secrets.baseline
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # ========================================
+  # Unit & Integration Tests
+  # ========================================
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: teamai_test
+          POSTGRES_USER: teamai
+          POSTGRES_PASSWORD: teamai_test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install backend dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r backend/requirements.txt || \
+          pip install fastapi uvicorn sqlalchemy alembic psycopg2-binary \
+                      redis python-dotenv pydantic pydantic-settings \
+                      passlib python-jose pytest pytest-asyncio pytest-cov
+
+      - name: Run backend tests
+        env:
+          DATABASE_URL: postgresql://teamai:teamai_test_password@localhost:5432/teamai_test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key-for-ci
+        run: |
+          cd backend
+          pytest -v --cov=app --cov-report=xml --cov-report=term
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: backend/coverage.xml
+          flags: backend
+          name: backend-coverage
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      - name: Run frontend tests
+        run: cd frontend && npm test -- --coverage
+
+      - name: Upload frontend coverage
+        uses: codecov/codecov-action@v4
+        with:
+          directory: frontend/coverage
+          flags: frontend
+          name: frontend-coverage
+
+  # ========================================
+  # Docker Build & Push
+  # ========================================
+  build:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.ACR_REGISTRY }}/${{ env.BACKEND_IMAGE }}
+          tags: |
+            type=sha,prefix={{branch}}-
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./infrastructure/docker/Dockerfile.backend
+          target: production
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.ACR_REGISTRY }}/${{ env.BACKEND_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.ACR_REGISTRY }}/${{ env.BACKEND_IMAGE }}:buildcache,mode=max
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./infrastructure/docker/Dockerfile.frontend
+          target: production
+          push: true
+          tags: ${{ secrets.ACR_REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=registry,ref=${{ secrets.ACR_REGISTRY }}/${{ env.FRONTEND_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.ACR_REGISTRY }}/${{ env.FRONTEND_IMAGE }}:buildcache,mode=max
+
+      - name: Scan backend image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ secrets.ACR_REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-backend.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-backend.sarif'
+
+  # ========================================
+  # Deploy to Staging
+  # ========================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://teamai-staging.azurewebsites.net
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy backend to Azure Container Apps
+        run: |
+          az containerapp update \
+            --name teamai-backend-staging \
+            --resource-group teamai-staging-rg \
+            --image ${{ secrets.ACR_REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }} \
+            --set-env-vars \
+              USE_AZURE_KEYVAULT=true \
+              AZURE_KEYVAULT_URL=${{ secrets.KEYVAULT_URL_STAGING }} \
+              ENVIRONMENT=staging
+
+      - name: Deploy frontend to Azure Container Apps
+        run: |
+          az containerapp update \
+            --name teamai-frontend-staging \
+            --resource-group teamai-staging-rg \
+            --image ${{ secrets.ACR_REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+
+  # ========================================
+  # UI/E2E Tests (Staging)
+  # ========================================
+  ui-tests:
+    name: UI Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Playwright
+        run: |
+          cd frontend
+          npm ci
+          npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        env:
+          STAGING_URL: https://teamai-staging.azurewebsites.net
+        run: |
+          cd frontend
+          npx playwright test --project=chromium
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+
+  # ========================================
+  # Deploy to Production (Manual Approval)
+  # ========================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, ui-tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://teamai.com
+    
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy backend to production
+        run: |
+          az containerapp update \
+            --name teamai-backend-prod \
+            --resource-group teamai-prod-rg \
+            --image ${{ secrets.ACR_REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }} \
+            --set-env-vars \
+              USE_AZURE_KEYVAULT=true \
+              AZURE_KEYVAULT_URL=${{ secrets.KEYVAULT_URL_PROD }} \
+              ENVIRONMENT=production
+
+      - name: Deploy frontend to production
+        run: |
+          az containerapp update \
+            --name teamai-frontend-prod \
+            --resource-group teamai-prod-rg \
+            --image ${{ secrets.ACR_REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          body: |
+            Production deployment
+            - Backend: ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+            - Frontend: ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}

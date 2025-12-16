@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import './LoginPage.css';
 
 export default function LoginPage() {
-  const { login, isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {

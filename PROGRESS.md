@@ -1,7 +1,7 @@
-# Phase 1 Complete: Google SSO Authentication System ✅
+# Phase 1 Complete: Google SSO Authentication + Azure Deployment ✅
 
 **Last Updated:** December 16, 2025  
-**Current Status:** Authentication fully functional, tested, and deployed
+**Current Status:** Production deployment on Azure Container Apps, OAuth configured, ready for testing
 
 ## Docker-First Development Setup ✅
 
@@ -58,6 +58,16 @@ make down            # Stop all services
 - Frontend UI tests (8 components)
 - Integration tests (5 scenarios)
 - Browser verification completed
+
+**Azure Production Deployment:**
+- Frontend: https://teamai-frontend.grayisland-ba13f170.eastus.azurecontainerapps.io/
+- Backend: https://teamai-backend.grayisland-ba13f170.eastus.azurecontainerapps.io/
+- PostgreSQL: teamai-db.postgres.database.azure.com (West US)
+- Redis: teamai-redis.redis.cache.windows.net (East US)
+- Container Registry: teamairegistry.azurecr.io
+- All secrets stored in Azure Key Vault
+- Automatic database migrations on startup
+- Monthly cost: ~$143 (pre-startup credits)
 
 ### 1. Database Models Created
 All 11 tables with proper relationships:
@@ -124,43 +134,70 @@ cd backend && PYTHONPATH=/workspaces/TeamAI/backend alembic history
 
 ## Next Steps (Priority Order)
 
-### 🔑 Immediate (Google OAuth Setup)
-1. **Configure Google Cloud Console:**
-   - Create OAuth 2.0 credentials
-   - Set authorized redirect URI: `http://localhost:8000/api/v1/auth/google/callback`
-   - Add `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to backend/.env
+### ✅ Completed - Azure Production Deployment
+1. **Infrastructure Setup:**
+   - ✅ Created Azure Resource Group (teamai-prod)
+   - ✅ Deployed Container Apps (backend + frontend)
+   - ✅ Configured PostgreSQL Flexible Server
+   - ✅ Set up Redis Cache
+   - ✅ Stored secrets in Azure Key Vault
+   - ✅ Built and pushed Docker images to ACR
+   - ✅ Added Google OAuth production redirect URI
+   - ✅ Configured automatic database migrations
 
-2. **Test Real OAuth Flow:**
-   - Click "Sign in with Google" on login page
-   - Verify redirect, token exchange, and user creation
-   - Test role-based access (admin vs team_user)
+2. **Deployment Scripts Created:**
+   - ✅ `scripts/azure-setup.sh` - Create all Azure resources
+   - ✅ `scripts/azure-deploy.sh` - Build and deploy containers
+   - ✅ `scripts/azure-cleanup.sh` - Teardown resources
+   - ✅ `infrastructure/docker/startup.sh` - Auto-run migrations on backend start
 
-### 🎯 Phase 2: Core Agent System
+### 🧪 Immediate - Production Testing
+1. **Test Production OAuth Flow:**
+   - Open: https://teamai-frontend.grayisland-ba13f170.eastus.azurecontainerapps.io/
+   - Click "Sign in with Google"
+   - Verify redirect to Google → authorization → callback → dashboard
+   - Test with yogeshkhandge@gmail.com
+
+2. **Verify Database Migrations:**
+   - Check backend logs for Alembic migration output
+   - Verify all 3 migrations applied (initial schema, Google SSO, test data)
+   - Test user creation and role assignment
+
+### 🎯 Phase 2: Core Agent System (Ready to Start)
 1. **Agent Runtime Engine:**
    - Implement LangGraph executor for recipe workflows
    - Build component library (WebCrawler, LLMProcessor, ReportGenerator)
    - Groq API integration with llama-3.1-8b-instant fallback
+   - Test with SEO Specialist cookbook
 
 2. **Marketplace UI:**
    - Browse available agents (SEO Specialist, Social Media Scheduler, Lead Qualifier)
-   - Agent purchase flow
-   - Assign agents to teams
+   - Agent purchase flow (create subscription records)
+   - Assign agents to teams (allocate to team_id)
+   - Display agent capabilities from cookbook YAML
 
 3. **Agent Management:**
    - Team Config Portal (schedule tasks, view outputs)
-   - Subscription tracking and metering
-   - Global audit log UI
+   - Task queue management (pending/running/completed)
+   - Subscription tracking and metering (tokens, execution count)
+   - Global audit log UI (admin-only)
 
-### 🚀 Phase 3: Production Ready
-1. Token refresh implementation
-2. Azure Container Apps deployment
-3. Production Google OAuth credentials
-4. Error monitoring and alerts
+### 🚀 Phase 3: Production Optimization
+1. ✅ Azure Container Apps deployment (DONE)
+2. ✅ Production Google OAuth credentials (DONE)
+3. Token refresh implementation (30min → 7 day tokens)
+4. Error monitoring with Azure Monitor
+5. Application Insights integration
+6. Custom domain setup (app.teamai.com)
+7. Startup credits onboarding (Microsoft for Startups)
+8. Production scaling rules (auto-scale 1-10 replicas)
 
 ## Known Issues
-- ⚠️ Google OAuth requires credentials (blocked until setup)
-- ⚠️ No refresh token logic (only 30min access tokens)
-- ℹ️ TypeScript warning about tsconfig.node.json (non-critical, fixed)
+- ⚠️ No refresh token logic (only 30min access tokens - add refresh endpoint)
+- ⚠️ Database migrations run on every restart (consider migration lock table)
+- ⚠️ No monitoring/alerts configured (add Application Insights)
+- ℹ️ Using Basic tier for Redis and PostgreSQL (upgrade for production scale)
+- ℹ️ Monthly cost $143 until startup credits secured
 
 ## File Structure
 ```

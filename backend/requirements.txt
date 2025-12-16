@@ -32,7 +32,7 @@ azure-storage-blob==12.19.0
 httpx==0.26.0
 
 # Web Scraping (for agent components)
-beautifulsoup4==4.12.2
+beautifulsoup4==4.12.3
 lxml==5.1.0
 
 # LLM & AI Agents

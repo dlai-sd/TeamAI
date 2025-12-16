@@ -35,7 +35,8 @@ recipe:
         component: "WebCrawler"
         description: "Fetch and parse website pages"
         config:
-          max_pages: "{{ inputs.max_depth * 20 }}"
+          max_pages: 100
+          max_depth: "{{ inputs.max_depth }}"
           respect_robots: true
           timeout: 30
           user_agent: "TeamAI-Bot/1.0"
@@ -47,8 +48,8 @@ recipe:
         component: "LLMProcessor"
         description: "Analyze site structure for SEO issues using LLM"
         config:
-          model: "groq-llama-3.1-8b-instant"
-          fallback_model: "groq-llama-3.3-70b-versatile"
+          model: "llama-3.1-8b-instant"
+          fallback_model: "llama-3.3-70b-versatile"
           temperature: 0.2
           max_tokens: 2000
           prompt_template: |

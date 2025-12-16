@@ -261,6 +261,16 @@ class RecipeEvaluator:
                 value = value.get(part, '')
             result = result.replace(f'{{{{ {match} }}}}', str(value))
         
+        # Try to convert to appropriate type
+        if result.isdigit():
+            return int(result)
+        try:
+            return float(result)
+        except ValueError:
+            pass
+        if result.lower() in ('true', 'false'):
+            return result.lower() == 'true'
+        
         return result
     
     def _build_prompt(self, template: str, node_inputs: Dict) -> str:

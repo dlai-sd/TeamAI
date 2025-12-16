@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 
 # Import routers
-from app.api import auth, invites
+from app.api import auth, invites, agents
 
 app = FastAPI(
     title="TeamAI API",
@@ -30,6 +30,7 @@ app.add_middleware(
 # Register API routers
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(invites.router, prefix="/api/v1")
+app.include_router(agents.router, prefix="/api/v1")
 
 @app.get("/")
 async def root():

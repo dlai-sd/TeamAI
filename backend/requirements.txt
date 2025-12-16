@@ -35,6 +35,12 @@ httpx==0.26.0
 beautifulsoup4==4.12.2
 lxml==5.1.0
 
+# LLM & AI Agents
+groq==0.4.1
+langgraph==0.0.26
+langchain==0.1.5
+langchain-core==0.1.16
+
 # Testing
 pytest==7.4.3
 pytest-asyncio==0.21.1

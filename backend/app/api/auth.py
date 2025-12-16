@@ -4,6 +4,7 @@ Authentication API Endpoints (Google SSO Only)
 import secrets
 from typing import Dict
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.utils.db import get_db
@@ -44,13 +45,13 @@ async def google_login_initiate(
     """
     Initiate Google OAuth2 login flow
     
-    Redirects user to Google login page
+    Redirects user directly to Google login page
     
     Args:
         domain: Optional Google Workspace domain restriction (e.g., 'company.com')
     
     Returns:
-        Redirect URL and state parameter
+        HTTP 302 redirect to Google OAuth authorization page
     """
     # Generate CSRF state token
     state = secrets.token_urlsafe(32)
@@ -66,11 +67,8 @@ async def google_login_initiate(
     # Get authorization URL from Google
     auth_url = google_oauth_client.get_authorization_url(state, hd=domain)
     
-    return {
-        "authorization_url": auth_url,
-        "state": state,
-        "message": "Redirect user to authorization_url"
-    }
+    # Redirect directly to Google (standard OAuth flow)
+    return RedirectResponse(url=auth_url, status_code=302)
 
 
 @router.get("/google/callback")

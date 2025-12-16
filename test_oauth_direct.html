@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Direct Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+        button, a {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            background: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover, a:hover {
+            background: #357ae8;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 OAuth Direct Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Direct Link (Click to navigate)</h2>
+        <p>This should navigate your browser to the backend OAuth endpoint</p>
+        <a href="http://localhost:8000/api/v1/auth/google/login" target="_blank">
+            Click Here to Test OAuth Endpoint
+        </a>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: window.location.href (Same as React button)</h2>
+        <p>This mimics exactly what the React app's login() function does</p>
+        <button onclick="testWindowLocation()">
+            Test window.location.href
+        </button>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Fetch API (Check if endpoint is accessible)</h2>
+        <button onclick="testFetch()">
+            Test Fetch Request
+        </button>
+        <div id="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: XMLHttpRequest (Alternative check)</h2>
+        <button onclick="testXHR()">
+            Test XHR Request
+        </button>
+        <div id="xhr-result"></div>
+    </div>
+
+    <script>
+        function testWindowLocation() {
+            console.log('Attempting window.location.href redirect...');
+            const url = 'http://localhost:8000/api/v1/auth/google/login';
+            console.log('Navigating to:', url);
+            window.location.href = url;
+        }
+
+        async function testFetch() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Testing...';
+            
+            try {
+                console.log('Fetching:', 'http://localhost:8000/api/v1/auth/google/login');
+                const response = await fetch('http://localhost:8000/api/v1/auth/google/login');
+                const data = await response.json();
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+                console.log('Fetch success:', data);
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}\n\nStack: ${error.stack}`;
+                console.error('Fetch error:', error);
+            }
+        }
+
+        async function testXHR() {
+            const resultDiv = document.getElementById('xhr-result');
+            resultDiv.textContent = 'Testing XHR...';
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'http://localhost:8000/api/v1/auth/google/login', true);
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    resultDiv.textContent = 'XHR Success:\n' + xhr.responseText;
+                    console.log('XHR success:', xhr.responseText);
+                } else {
+                    resultDiv.textContent = `XHR Error: Status ${xhr.status}`;
+                }
+            };
+            
+            xhr.onerror = function() {
+                resultDiv.textContent = 'XHR Network Error: Connection refused or blocked';
+                console.error('XHR error');
+            };
+            
+            xhr.send();
+        }
+
+        // Auto-run fetch test on page load to check connectivity
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded. Backend should be at: http://localhost:8000');
+            console.log('Frontend URL:', window.location.href);
+        });
+    </script>
+</body>
+</html>

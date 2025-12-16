@@ -1,5 +1,243 @@
 # TeamAI - AI Coding Agent Instructions
 
+## Deployment & Publishing Guide
+
+### Local Development (Current Setup)
+**Environment:** GitHub Codespaces with Docker Compose  
+**Access URLs:**
+- Frontend: `https://<codespace-name>-3000.app.github.dev`
+- Backend: `https://<codespace-name>-8000.app.github.dev`
+
+**Prerequisites:**
+1. Set all ports to "Public" visibility in VS Code PORTS tab (required for CORS)
+2. Environment files configured:
+   - `backend/.env` with GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, JWT_SECRET_KEY, DATABASE_URL, REDIS_URL
+   - `frontend/.env` with VITE_API_URL pointing to backend Codespaces URL
+
+**Start Services:**
+```bash
+cd /workspaces/TeamAI
+docker-compose up -d
+docker-compose ps  # Verify all services running
+docker-compose logs backend frontend  # Check for errors
+```
+
+**Test OAuth Flow:**
+1. Open frontend URL in browser
+2. Click "Sign in with Google"
+3. Complete Google authentication
+4. Should redirect to dashboard with JWT tokens
+
+### Production Deployment to Azure
+
+#### Option 1: Azure Container Apps (Recommended for MVP)
+**Cost:** ~$143/month infrastructure + ~$25/month Groq API = $168/month total
+
+**Deployment Steps:**
+1. **Create Azure Resources:**
+   ```bash
+   # Login to Azure
+   az login
+   
+   # Create resource group
+   az group create --name teamai-prod --location eastus
+   
+   # Create Container Registry
+   az acr create --resource-group teamai-prod --name teamairegistry --sku Basic
+   
+   # Create PostgreSQL (managed)
+   az postgres flexible-server create \
+     --resource-group teamai-prod \
+     --name teamai-db \
+     --admin-user adminuser \
+     --admin-password <SECURE_PASSWORD> \
+     --sku-name Standard_B2s \
+     --tier Burstable \
+     --storage-size 32
+   
+   # Create Redis Cache
+   az redis create \
+     --resource-group teamai-prod \
+     --name teamai-redis \
+     --location eastus \
+     --sku Basic \
+     --vm-size c0
+   
+   # Create Key Vault for secrets
+   az keyvault create \
+     --resource-group teamai-prod \
+     --name teamai-vault \
+     --location eastus
+   ```
+
+2. **Build and Push Docker Images:**
+   ```bash
+   # Build backend
+   docker build -f infrastructure/docker/Dockerfile.backend -t teamairegistry.azurecr.io/backend:latest .
+   
+   # Build frontend
+   docker build -f infrastructure/docker/Dockerfile.frontend -t teamairegistry.azurecr.io/frontend:latest .
+   
+   # Login to ACR
+   az acr login --name teamairegistry
+   
+   # Push images
+   docker push teamairegistry.azurecr.io/backend:latest
+   docker push teamairegistry.azurecr.io/frontend:latest
+   ```
+
+3. **Store Secrets in Key Vault:**
+   ```bash
+   az keyvault secret set --vault-name teamai-vault --name "GOOGLE-CLIENT-ID" --value "<client_id>"
+   az keyvault secret set --vault-name teamai-vault --name "GOOGLE-CLIENT-SECRET" --value "<client_secret>"
+   az keyvault secret set --vault-name teamai-vault --name "JWT-SECRET-KEY" --value "<generate_secure_key>"
+   az keyvault secret set --vault-name teamai-vault --name "DATABASE-URL" --value "<postgres_connection_string>"
+   az keyvault secret set --vault-name teamai-vault --name "REDIS-URL" --value "<redis_connection_string>"
+   ```
+
+4. **Deploy Container Apps:**
+   ```bash
+   # Create Container Apps environment
+   az containerapp env create \
+     --name teamai-env \
+     --resource-group teamai-prod \
+     --location eastus
+   
+   # Deploy backend
+   az containerapp create \
+     --name teamai-backend \
+     --resource-group teamai-prod \
+     --environment teamai-env \
+     --image teamairegistry.azurecr.io/backend:latest \
+     --target-port 8000 \
+     --ingress external \
+     --cpu 2 --memory 4Gi \
+     --secrets \
+       google-client-id=keyvaultref:<key_vault_uri>/secrets/GOOGLE-CLIENT-ID,identityref:<managed_identity> \
+       jwt-secret-key=keyvaultref:<key_vault_uri>/secrets/JWT-SECRET-KEY,identityref:<managed_identity> \
+     --env-vars \
+       GOOGLE_CLIENT_ID=secretref:google-client-id \
+       JWT_SECRET_KEY=secretref:jwt-secret-key
+   
+   # Deploy frontend
+   az containerapp create \
+     --name teamai-frontend \
+     --resource-group teamai-prod \
+     --environment teamai-env \
+     --image teamairegistry.azurecr.io/frontend:latest \
+     --target-port 3000 \
+     --ingress external \
+     --cpu 1 --memory 2Gi \
+     --env-vars \
+       VITE_API_URL=https://teamai-backend.<region>.azurecontainerapps.io
+   ```
+
+5. **Configure Custom Domain (Optional):**
+   ```bash
+   # Add custom domain
+   az containerapp hostname add \
+     --resource-group teamai-prod \
+     --name teamai-frontend \
+     --hostname app.teamai.com
+   
+   # Add SSL certificate
+   az containerapp ssl upload \
+     --resource-group teamai-prod \
+     --name teamai-frontend \
+     --hostname app.teamai.com \
+     --certificate-file /path/to/cert.pfx \
+     --password <cert_password>
+   ```
+
+6. **Run Database Migrations:**
+   ```bash
+   # Connect to backend container
+   az containerapp exec \
+     --name teamai-backend \
+     --resource-group teamai-prod \
+     --command "/bin/bash"
+   
+   # Inside container, run Alembic migrations
+   alembic upgrade head
+   ```
+
+7. **Update Google OAuth Redirect URIs:**
+   - Go to Google Cloud Console → APIs & Services → Credentials
+   - Edit OAuth 2.0 Client ID
+   - Add authorized redirect URIs:
+     - `https://teamai-backend.<region>.azurecontainerapps.io/api/v1/auth/google/callback`
+     - `https://app.teamai.com/api/v1/auth/google/callback` (if using custom domain)
+
+#### Option 2: Azure Kubernetes Service (For Scale)
+**Use when:** Handling 100+ agencies or need advanced orchestration
+
+**Deployment Steps:**
+1. Create AKS cluster
+2. Apply Kubernetes manifests from `infrastructure/kubernetes/`
+3. Configure Helm charts for PostgreSQL, Redis
+4. Deploy ingress controller with SSL
+5. Configure horizontal pod autoscaling
+
+#### Option 3: Azure Functions (For Serverless Agent Runtime)
+**Use for:** Agent execution engine (LangGraph workflows)
+
+**Deployment Steps:**
+1. Package agent code as Azure Functions
+2. Configure Durable Functions for stateful workflows
+3. Connect to Groq API via secure endpoints
+4. Monitor execution logs in Application Insights
+
+### CI/CD Pipeline (GitHub Actions)
+
+**Setup Automated Deployments:**
+1. Create GitHub secrets:
+   - `AZURE_CREDENTIALS` (service principal)
+   - `ACR_USERNAME`, `ACR_PASSWORD`
+   - `AZURE_WEBAPP_PUBLISH_PROFILE`
+
+2. GitHub Actions workflow (`.github/workflows/deploy.yml`):
+   ```yaml
+   name: Deploy to Azure
+   on:
+     push:
+       branches: [main]
+   jobs:
+     deploy:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v2
+         - name: Build and push Docker images
+           run: |
+             docker-compose build
+             docker tag backend:latest $ACR_REGISTRY/backend:$GITHUB_SHA
+             docker push $ACR_REGISTRY/backend:$GITHUB_SHA
+         - name: Deploy to Container Apps
+           uses: azure/container-apps-deploy-action@v1
+           with:
+             imageToDeploy: ${{ env.ACR_REGISTRY }}/backend:${{ github.sha }}
+   ```
+
+### Post-Deployment Checklist
+- [ ] Verify all environment variables loaded from Key Vault
+- [ ] Test OAuth flow with production Google credentials
+- [ ] Run database migrations (Alembic)
+- [ ] Verify CORS allows production frontend domain
+- [ ] Test agent execution with Groq API
+- [ ] Configure monitoring alerts in Azure Monitor
+- [ ] Set up backup strategy for PostgreSQL
+- [ ] Enable auto-scaling rules for Container Apps
+- [ ] Test Redis cache connectivity
+- [ ] Verify JWT token generation and validation
+
+### Rollback Procedure
+```bash
+# Revert to previous container image
+az containerapp revision list --name teamai-backend --resource-group teamai-prod
+az containerapp revision activate --revision <previous-revision-name>
+```
+
+---
+
 ## Project Overview (Business Context)
 
 1.  **The Scaling Challenge:** Addresses the critical growth bottleneck for Digital Marketing Agencies: the linear dependency between revenue growth and the cost of acquiring new human talent and physical office space.

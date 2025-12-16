@@ -11,6 +11,42 @@ export default function CallbackPage() {
 
   useEffect(() => {
     const handleCallback = async () => {
+      // Check for tokens in URL params (new flow: backend redirects with tokens)
+      const accessToken = searchParams.get('access_token');
+      const refreshToken = searchParams.get('refresh_token');
+      const isNewUser = searchParams.get('is_new_user') === 'true';
+      
+      if (accessToken && refreshToken) {
+        // New flow: tokens provided directly in URL
+        localStorage.setItem('access_token', accessToken);
+        localStorage.setItem('refresh_token', refreshToken);
+        
+        // Fetch user profile with Authorization header
+        try {
+          const userResponse = await axios.get(`${API_BASE_URL}/api/v1/auth/me`, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`
+            }
+          });
+          const user = userResponse.data;
+          
+          // Redirect based on user role
+          if (isNewUser) {
+            navigate('/welcome');
+          } else if (user.role === 'agency_admin') {
+            navigate('/admin/dashboard');
+          } else {
+            navigate('/dashboard');
+          }
+        } catch (err) {
+          console.error('Failed to fetch user profile:', err);
+          navigate('/dashboard');  // Fallback
+        }
+        
+        return;
+      }
+      
+      // Old flow: handle OAuth code exchange (fallback)
       const code = searchParams.get('code');
       const state = searchParams.get('state');
       const errorParam = searchParams.get('error');
@@ -22,13 +58,13 @@ export default function CallbackPage() {
       }
 
       if (!code || !state) {
-        setError('Missing authorization code or state parameter');
+        setError('Missing authorization parameters');
         setTimeout(() => navigate('/login'), 3000);
         return;
       }
 
       try {
-        // Exchange code for tokens
+        // Exchange code for tokens (backend should now redirect instead)
         const response = await axios.get(
           `${API_BASE_URL}/api/v1/auth/google/callback?code=${code}&state=${state}`
         );

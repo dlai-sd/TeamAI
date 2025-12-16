@@ -41,7 +41,7 @@ async def create_invite(
         InviteResponse: Created invitation details
     """
     auth_service = AuthService(db)
-    invite = await auth_service.create_invite(request, current_user)
+    invite = auth_service.create_invite(request, current_user)
     
     return InviteResponse(
         id=invite.id,

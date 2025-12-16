@@ -74,7 +74,8 @@ class GoogleOAuthClient:
             try:
                 response = await client.post(self.token_url, data=data)
                 response.raise_for_status()
-                return response.json()
+                token_data = response.json()
+                return token_data
             except httpx.HTTPStatusError as e:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -100,7 +101,8 @@ class GoogleOAuthClient:
             try:
                 response = await client.get(self.userinfo_url, headers=headers)
                 response.raise_for_status()
-                return response.json()
+                user_info = response.json()
+                return user_info
             except httpx.HTTPStatusError as e:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,

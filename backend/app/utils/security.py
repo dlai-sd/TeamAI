@@ -155,7 +155,7 @@ def get_current_user(
     
     # Fetch user from database
     from sqlalchemy import select
-    result = db.execute(select(User).filter(User.external_id == user_id))
+    result = db.execute(select(User).filter(User.id == user_id))
     user = result.scalar_one_or_none()
     
     if user is None:

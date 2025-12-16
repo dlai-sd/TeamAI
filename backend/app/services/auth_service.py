@@ -4,7 +4,7 @@ Authentication Service - Business logic for user registration, login, and SSO
 from typing import Optional, Tuple
 from datetime import datetime
 from uuid import UUID
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy import select
 from fastapi import HTTPException, status
 
@@ -21,14 +21,14 @@ from app.config import settings
 class AuthService:
     """Authentication service with SSO support"""
     
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: Session):
         self.db = db
     
     # =========================================================================
     # Google SSO Authentication (Only Method)
     # =========================================================================
     
-    async def sso_login_or_register(
+    def sso_login_or_register(
         self, 
         provider: AuthProvider, 
         external_id: str, 
@@ -53,7 +53,7 @@ class AuthService:
             HTTPException: 400 if no pending invite for new user
         """
         # Check if user exists (by external_id or email)
-        result = await self.db.execute(
+        result = self.db.execute(
             select(User).filter(
                 (User.external_id == external_id) | (User.email == email)
             )
@@ -71,14 +71,14 @@ class AuthService:
             if not user.avatar_url and avatar_url:
                 user.avatar_url = avatar_url
             
-            await self.db.commit()
-            await self.db.refresh(user)
+            self.db.commit()
+            self.db.refresh(user)
             
             tokens = self._generate_tokens(user)
             return user, tokens, False
         
         # New SSO user - check for pending invite
-        result = await self.db.execute(
+        result = self.db.execute(
             select(Invite).filter(
                 Invite.email == email,
                 Invite.status == InviteStatus.PENDING,
@@ -93,13 +93,20 @@ class AuthService:
             )
         
         # Create user from invite
+        # Convert invite role string (e.g., "AGENCY_ADMIN") to UserRole enum (e.g., UserRole.AGENCY_ADMIN)
+        try:
+            role = UserRole[invite.role]  # Use bracket notation for enum name lookup
+        except KeyError:
+            # Fallback: convert "AGENCY_ADMIN" string to enum value "agency_admin"
+            role = UserRole(invite.role.lower())
+        
         user = User(
             agency_id=invite.agency_id,
             team_id=invite.team_id,
             email=email,
             full_name=full_name,
             avatar_url=avatar_url,
-            role=UserRole(invite.role),  # Convert string to enum
+            role=role,
             auth_provider=provider,
             external_id=external_id,
             email_verified=True,  # SSO users are always verified
@@ -112,8 +119,8 @@ class AuthService:
         invite.status = InviteStatus.ACCEPTED
         invite.accepted_at = datetime.utcnow()
         
-        await self.db.commit()
-        await self.db.refresh(user)
+        self.db.commit()
+        self.db.refresh(user)
         
         tokens = self._generate_tokens(user)
         return user, tokens, True
@@ -122,7 +129,7 @@ class AuthService:
     # Invite Management
     # =========================================================================
     
-    async def create_invite(
+    def create_invite(
         self, 
         request: InviteCreateRequest, 
         invited_by: User
@@ -148,7 +155,7 @@ class AuthService:
             )
         
         # Check if email already exists
-        result = await self.db.execute(
+        result = self.db.execute(
             select(User).filter(User.email == request.email)
         )
         existing_user = result.scalar_one_or_none()
@@ -177,15 +184,15 @@ class AuthService:
             invited_by_id=invited_by.id,
         )
         self.db.add(invite)
-        await self.db.commit()
-        await self.db.refresh(invite)
+        self.db.commit()
+        self.db.refresh(invite)
         
         # TODO: Send email with invite link
         # invite_link = f"{settings.FRONTEND_URL}/accept-invite?token={invite.token}"
         
         return invite
     
-    async def get_pending_invite(self, email: str) -> Optional[Invite]:
+    def get_pending_invite(self, email: str) -> Optional[Invite]:
         """
         Get pending invite for email (used during SSO login)
         
@@ -195,7 +202,7 @@ class AuthService:
         Returns:
             Invite object if found and valid, None otherwise
         """
-        result = await self.db.execute(
+        result = self.db.execute(
             select(Invite).filter(
                 Invite.email == email,
                 Invite.status == InviteStatus.PENDING,
@@ -207,14 +214,14 @@ class AuthService:
             return invite
         return None
     
-    async def mark_invite_accepted(self, invite_id: UUID) -> None:
+    def mark_invite_accepted(self, invite_id: UUID) -> None:
         """
         Mark invite as accepted after user logs in via SSO
         
         Args:
             invite_id: ID of the invite to mark as accepted
         """
-        result = await self.db.execute(
+        result = self.db.execute(
             select(Invite).filter(Invite.id == invite_id)
         )
         invite = result.scalar_one_or_none()
@@ -222,7 +229,7 @@ class AuthService:
         if invite:
             invite.status = InviteStatus.ACCEPTED
             invite.accepted_at = datetime.utcnow()
-            await self.db.commit()
+            self.db.commit()
     
     # =========================================================================
     # Utility Methods

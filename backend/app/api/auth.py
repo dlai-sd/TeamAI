@@ -5,7 +5,7 @@ import secrets
 from typing import Dict
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import RedirectResponse
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
 from app.utils.db import get_db
 from app.utils.security import get_current_user
@@ -75,7 +75,7 @@ async def google_login_initiate(
 async def google_callback(
     code: str = Query(..., description="Authorization code from Google"),
     state: str = Query(..., description="State parameter for CSRF protection"),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_db),
 ):
     """
     Google OAuth2 callback endpoint (Google redirects here after login)
@@ -112,7 +112,7 @@ async def google_callback(
         
         # Login or register user
         auth_service = AuthService(db)
-        user, tokens, is_new_user = await auth_service.sso_login_or_register(
+        user, tokens, is_new_user = auth_service.sso_login_or_register(
             provider=AuthProvider.GOOGLE,
             external_id=external_id,
             email=email,
@@ -120,26 +120,18 @@ async def google_callback(
             avatar_url=avatar_url,
         )
         
-        return OAuth2CallbackResponse(
-            access_token=tokens.access_token,
-            refresh_token=tokens.refresh_token,
-            token_type=tokens.token_type,
-            expires_in=tokens.expires_in,
-            user=UserResponse(
-                id=user.id,
-                email=user.email,
-                full_name=user.full_name,
-                role=user.role,
-                auth_provider=user.auth_provider,
-                email_verified=user.email_verified,
-                is_active=user.is_active,
-                created_at=user.created_at,
-                last_login_at=user.last_login_at,
-                agency_id=user.agency_id,
-                team_id=user.team_id,
-            ),
-            is_new_user=is_new_user,
+        # Redirect to frontend with tokens (standard OAuth flow)
+        # Frontend will extract tokens from URL and store in localStorage
+        redirect_url = (
+            f"{settings.FRONTEND_URL}/auth/callback"
+            f"?access_token={tokens.access_token}"
+            f"&refresh_token={tokens.refresh_token}"
+            f"&token_type={tokens.token_type}"
+            f"&expires_in={tokens.expires_in}"
+            f"&is_new_user={'true' if is_new_user else 'false'}"
         )
+        
+        return RedirectResponse(url=redirect_url, status_code=302)
     
     except Exception as e:
         raise HTTPException(

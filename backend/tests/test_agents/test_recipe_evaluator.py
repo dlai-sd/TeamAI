@@ -152,13 +152,13 @@ class TestRecipeEvaluatorInitialization:
     
     def test_validate_recipe_success(self, mock_recipe_simple):
         """Should validate correct recipe structure"""
-        evaluator = RecipeEvaluator(recipe=mock_recipe_simple, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition=mock_recipe_simple, mock_mode=True)
         assert evaluator.validate_recipe() is True
     
     def test_validate_recipe_missing_keys(self):
         """Should fail validation for missing required keys"""
         invalid_recipe = {'id': 'test', 'name': 'Test'}  # Missing workflow
-        evaluator = RecipeEvaluator(recipe=invalid_recipe, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition=invalid_recipe, mock_mode=True)
         assert evaluator.validate_recipe() is False
     
     def test_validate_recipe_unknown_component(self):
@@ -171,7 +171,7 @@ class TestRecipeEvaluatorInitialization:
                 'edges': []
             }
         }
-        evaluator = RecipeEvaluator(recipe=invalid_recipe, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition=invalid_recipe, mock_mode=True)
         assert evaluator.validate_recipe() is False
 
 
@@ -181,7 +181,7 @@ class TestDAGExecution:
     @pytest.mark.asyncio
     async def test_build_execution_order(self, mock_recipe_simple):
         """Should build topological execution order"""
-        evaluator = RecipeEvaluator(recipe=mock_recipe_simple, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition=mock_recipe_simple, mock_mode=True)
         
         nodes = {node['id']: node for node in mock_recipe_simple['workflow']['nodes']}
         edges = mock_recipe_simple['workflow']['edges']
@@ -195,7 +195,7 @@ class TestDAGExecution:
     @pytest.mark.asyncio
     async def test_execute_nodes_in_order(self, mock_recipe_simple):
         """Should execute nodes in dependency order"""
-        evaluator = RecipeEvaluator(recipe=mock_recipe_simple, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition=mock_recipe_simple, mock_mode=True)
         
         with patch.object(evaluator, '_execute_node', new_callable=AsyncMock) as mock_execute:
             mock_execute.return_value = None
@@ -218,7 +218,7 @@ class TestDAGExecution:
     @pytest.mark.asyncio
     async def test_execution_state_stores_outputs(self, mock_recipe_simple):
         """Should store node outputs in execution_state"""
-        evaluator = RecipeEvaluator(recipe=mock_recipe_simple, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition=mock_recipe_simple, mock_mode=True)
         
         # Mock component execution
         with patch.object(evaluator, '_execute_component', new_callable=AsyncMock) as mock_comp:
@@ -300,7 +300,7 @@ class TestParameterInterpolation:
     @pytest.mark.asyncio
     async def test_interpolate_config_with_inputs(self, mock_recipe_with_interpolation):
         """Should interpolate {{ inputs.* }} variables"""
-        evaluator = RecipeEvaluator(recipe=mock_recipe_with_interpolation, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition=mock_recipe_with_interpolation, mock_mode=True)
         
         config = {
             'max_pages': '{{ inputs.max_depth * 20 }}',
@@ -322,7 +322,7 @@ class TestParameterInterpolation:
     @pytest.mark.asyncio
     async def test_interpolate_with_node_outputs(self):
         """Should interpolate {{ node.output.* }} variables"""
-        evaluator = RecipeEvaluator(recipe={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
         
         evaluator.execution_state = {
             'inputs': {'depth': 2},
@@ -336,21 +336,21 @@ class TestParameterInterpolation:
     
     def test_cast_value_to_int(self):
         """Should cast numeric strings to int"""
-        evaluator = RecipeEvaluator(recipe={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
         
         assert evaluator._cast_value('42') == 42
         assert evaluator._cast_value('-10') == -10
     
     def test_cast_value_to_float(self):
         """Should cast decimal strings to float"""
-        evaluator = RecipeEvaluator(recipe={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
         
         assert evaluator._cast_value('3.14') == 3.14
         assert evaluator._cast_value('0.5') == 0.5
     
     def test_cast_value_to_bool(self):
         """Should cast 'true'/'false' to bool"""
-        evaluator = RecipeEvaluator(recipe={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
         
         assert evaluator._cast_value('true') is True
         assert evaluator._cast_value('false') is False
@@ -358,7 +358,7 @@ class TestParameterInterpolation:
     
     def test_cast_value_to_string(self):
         """Should keep strings as strings"""
-        evaluator = RecipeEvaluator(recipe={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
         
         assert evaluator._cast_value('hello') == 'hello'
         assert evaluator._cast_value('not_a_number') == 'not_a_number'
@@ -366,7 +366,7 @@ class TestParameterInterpolation:
     @pytest.mark.asyncio
     async def test_build_prompt_with_context(self):
         """Should build LLM prompt from template and context"""
-        evaluator = RecipeEvaluator(recipe={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
         
         evaluator.execution_state = {
             'inputs': {'topic': 'SEO'}
@@ -386,7 +386,7 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_node_failure_stops_execution(self, mock_recipe_simple):
         """Should stop execution when node fails without allow_failure"""
-        evaluator = RecipeEvaluator(recipe=mock_recipe_simple, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition=mock_recipe_simple, mock_mode=True)
         
         with patch.object(evaluator, '_execute_component', new_callable=AsyncMock) as mock_comp:
             mock_comp.side_effect = Exception("Component failed")
@@ -402,7 +402,7 @@ class TestErrorHandling:
     @pytest.mark.asyncio
     async def test_allow_failure_continues_execution(self, mock_recipe_with_error_handling):
         """Should continue execution when node fails with allow_failure=True"""
-        evaluator = RecipeEvaluator(recipe=mock_recipe_with_error_handling, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition=mock_recipe_with_error_handling, mock_mode=True)
         
         with patch.object(evaluator, '_execute_component', new_callable=AsyncMock) as mock_comp:
             # critical_node succeeds, optional_node fails, final_node succeeds
@@ -462,7 +462,7 @@ class TestComponentExecution:
     @pytest.mark.asyncio
     async def test_execute_webcrawler_component(self):
         """Should execute WebCrawler with correct parameters"""
-        evaluator = RecipeEvaluator(recipe={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
         evaluator.execution_state = {
             'inputs': {
                 'website_url': 'https://example.com',
@@ -487,7 +487,7 @@ class TestComponentExecution:
     @pytest.mark.asyncio
     async def test_execute_llmprocessor_component(self):
         """Should execute LLMProcessor with rendered prompt"""
-        evaluator = RecipeEvaluator(recipe={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
         evaluator.execution_state = {'inputs': {}}
         
         mock_component = Mock()
@@ -512,7 +512,7 @@ class TestComponentExecution:
     @pytest.mark.asyncio
     async def test_execute_reportgenerator_component(self):
         """Should execute ReportGenerator with aggregated data"""
-        evaluator = RecipeEvaluator(recipe={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition={'id': 'test', 'name': 'Test', 'workflow': {'nodes': [], 'edges': []}}, mock_mode=True)
         
         mock_component = Mock()
         mock_component.execute = AsyncMock(return_value={'report': 'Markdown report'})
@@ -540,7 +540,7 @@ class TestMetricsTracking:
     @pytest.mark.asyncio
     async def test_tracks_execution_time(self, mock_recipe_simple):
         """Should track total execution time"""
-        evaluator = RecipeEvaluator(recipe=mock_recipe_simple, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition=mock_recipe_simple, mock_mode=True)
         
         with patch.object(evaluator, '_execute_component', new_callable=AsyncMock) as mock_comp:
             mock_comp.return_value = {'data': 'test'}
@@ -554,7 +554,7 @@ class TestMetricsTracking:
     @pytest.mark.asyncio
     async def test_tracks_tokens_and_cost(self, mock_recipe_simple):
         """Should track LLM tokens and cost"""
-        evaluator = RecipeEvaluator(recipe=mock_recipe_simple, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition=mock_recipe_simple, mock_mode=True)
         
         with patch.object(evaluator, '_execute_component', new_callable=AsyncMock) as mock_comp:
             mock_comp.side_effect = [
@@ -575,7 +575,7 @@ class TestMetricsTracking:
     @pytest.mark.asyncio
     async def test_tracks_nodes_executed(self, mock_recipe_simple):
         """Should count number of nodes executed"""
-        evaluator = RecipeEvaluator(recipe=mock_recipe_simple, mock_mode=True)
+        evaluator = RecipeEvaluator(recipe_definition=mock_recipe_simple, mock_mode=True)
         
         with patch.object(evaluator, '_execute_component', new_callable=AsyncMock) as mock_comp:
             mock_comp.return_value = {'data': 'test'}

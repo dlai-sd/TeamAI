@@ -143,6 +143,50 @@ async def test_agent_system():
         }
 
 
+@router.get("/test-live")
+async def test_agent_live():
+    """
+    Test agent system with REAL Groq API calls (no auth for demo)
+    WARNING: This costs money! Use sparingly.
+    """
+    import os
+    try:
+        groq_key = os.getenv('GROQ_API_KEY')
+        if not groq_key:
+            return {
+                'success': False,
+                'message': 'GROQ_API_KEY not configured'
+            }
+        
+        recipe_path = Path(__file__).parent.parent.parent.parent / "recipes" / "seo" / "site-audit.yaml"
+        evaluator = RecipeEvaluator(recipe_path=str(recipe_path), mock_mode=False)
+        
+        result = await evaluator.execute({
+            'website_url': 'https://example.com',
+            'max_depth': 1,
+            'include_images': False
+        })
+        
+        # Truncate output for response size
+        output = result.get('output', {})
+        if isinstance(output, dict) and 'content' in output:
+            output['content'] = output['content'][:1000] + '...(truncated)'
+        
+        return {
+            'success': result['success'],
+            'message': 'Agent executed with LIVE Groq API',
+            'metrics': result['metrics'],
+            'output_preview': output
+        }
+    except Exception as e:
+        import traceback
+        return {
+            'success': False,
+            'message': f'Agent error: {str(e)}',
+            'traceback': traceback.format_exc()
+        }
+
+
 # ============================================================================
 # AGENT ALLOCATION API (Phase 3)
 # ============================================================================

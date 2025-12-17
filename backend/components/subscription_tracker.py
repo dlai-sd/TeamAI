@@ -7,6 +7,7 @@ import sys
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone
 from pathlib import Path
+from uuid import UUID
 
 # Add backend to path
 backend_path = Path(__file__).parent.parent.parent
@@ -15,6 +16,16 @@ if str(backend_path) not in sys.path:
 
 from components.base import BaseComponent
 
+# Database imports (optional - only imported if available)
+try:
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from app.models.audit import AuditLog
+    DB_AVAILABLE = True
+except ImportError:
+    DB_AVAILABLE = False
+    AsyncSession = None
+    AuditLog = None
+
 
 class SubscriptionTracker(BaseComponent):
     """
@@ -22,11 +33,12 @@ class SubscriptionTracker(BaseComponent):
     This is a mandatory component - all recipes must include it
     """
     
-    def __init__(self, config: Optional[Dict[str, Any]] = None, mock_mode: bool = False):
+    def __init__(self, config: Optional[Dict[str, Any]] = None, mock_mode: bool = False, db_session: Optional[AsyncSession] = None):
         super().__init__(config, mock_mode)
         self.agent_instance_id = self.config.get('agent_instance_id')
         self.recipe_id = self.config.get('recipe_id')
         self.agency_id = self.config.get('agency_id')
+        self.db_session = db_session  # Optional database session for persistence
     
     def validate_config(self) -> bool:
         """Validate required tracking parameters"""
@@ -79,13 +91,34 @@ class SubscriptionTracker(BaseComponent):
             'timestamp': datetime.now(timezone.utc).isoformat()
         }
         
-        # TODO: Write to PostgreSQL audit_logs table
-        # For now, store in-memory (will be integrated with database in next step)
-        print(f"[SubscriptionTracker] Logged execution: {audit_entry}")
+        # Write to PostgreSQL audit_logs table (if database session provided)
+        audit_log_id = None
+        if self.db_session and DB_AVAILABLE:
+            try:
+                audit_log = AuditLog(
+                    agency_id=UUID(self.agency_id) if isinstance(self.agency_id, str) else self.agency_id,
+                    agent_instance_id=UUID(self.agent_instance_id) if isinstance(self.agent_instance_id, str) else self.agent_instance_id,
+                    recipe_id=UUID(self.recipe_id) if isinstance(self.recipe_id, str) else self.recipe_id,
+                    execution_time_ms=execution_time_ms,
+                    tokens_used=tokens_used,
+                    cost_incurred=cost_incurred,
+                    status=status,
+                    metadata=metadata
+                )
+                self.db_session.add(audit_log)
+                await self.db_session.flush()  # Get audit_log.id
+                audit_log_id = audit_log.id
+                print(f"[SubscriptionTracker] Persisted to audit_logs: {audit_log.id}")
+            except Exception as e:
+                print(f"[SubscriptionTracker] Database write failed: {e}")
+                # Continue execution - don't fail recipe on audit failure
+        else:
+            print(f"[SubscriptionTracker] Logged execution (in-memory): {audit_entry}")
         
         return {
             'tracked': True,
             'audit_entry': audit_entry,
+            'audit_log_id': audit_log_id,
             'billable_units': self._calculate_billable_units(execution_data)
         }
     

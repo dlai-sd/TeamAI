@@ -35,19 +35,39 @@ class RecipeEvaluator:
         'SubscriptionTracker': SubscriptionTracker
     }
     
-    def __init__(self, recipe_path: str, mock_mode: bool = False, tracking_config: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self, 
+        recipe_path: Optional[str] = None,
+        recipe_definition: Optional[Dict[str, Any]] = None,
+        mock_mode: bool = False, 
+        tracking_config: Optional[Dict[str, Any]] = None,
+        db_session: Optional[Any] = None
+    ):
         """
         Initialize recipe evaluator
         
         Args:
-            recipe_path: Path to YAML recipe file
+            recipe_path: Path to YAML recipe file (deprecated - use recipe_definition)
+            recipe_definition: Pre-loaded recipe dictionary (from database)
             mock_mode: If True, use mock data instead of real API calls
-            tracking_config: Configuration for subscription tracking (agency_id, agent_instance_id)
+            tracking_config: Configuration for subscription tracking (agency_id, agent_instance_id, recipe_id)
+            db_session: Optional AsyncSession for database persistence
         """
-        self.recipe_path = Path(recipe_path)
+        if recipe_path:
+            # Legacy mode - load from file
+            self.recipe_path = Path(recipe_path)
+            self.recipe = self._load_recipe()
+        elif recipe_definition:
+            # New mode - use pre-loaded definition (from database)
+            self.recipe_path = None
+            # Handle both {recipe: {...}} and {...} formats
+            self.recipe = recipe_definition.get('recipe', recipe_definition)
+        else:
+            raise ValueError("Either recipe_path or recipe_definition must be provided")
+        
         self.mock_mode = mock_mode
         self.tracking_config = tracking_config or {}
-        self.recipe = self._load_recipe()
+        self.db_session = db_session
         self.execution_state = {}
         self.metrics = {
             'start_time': None,
@@ -69,11 +89,16 @@ class RecipeEvaluator:
         
         tracker_config = {
             'agent_instance_id': self.tracking_config.get('agent_instance_id'),
-            'recipe_id': self.recipe.get('id') if hasattr(self, 'recipe') else None,
+            'recipe_id': self.tracking_config.get('recipe_id') or (self.recipe.get('id') if hasattr(self, 'recipe') else None),
             'agency_id': self.tracking_config.get('agency_id')
         }
         
-        return SubscriptionTracker(config=tracker_config, mock_mode=self.mock_mode)
+        return SubscriptionTracker(
+            config=tracker_config, 
+            mock_mode=self.mock_mode,
+            db_session=self.db_session
+        ) or not self.recipe_path.exists():
+            raise FileNotFoundError(f"Recipe file not found: {self.recipe_path}")
     
     def _load_recipe(self) -> Dict[str, Any]:
         """Load and parse YAML recipe"""

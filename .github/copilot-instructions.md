@@ -2,6 +2,35 @@
 
 ## Deployment & Publishing Guide
 
+### ⚠️ CRITICAL: Azure Deployment Lessons Learned
+
+**These 4 issues caused hours of debugging - avoid them:**
+
+1. **DATABASE_URL Password Encoding:** Special chars MUST be URL-encoded
+   - `@` → `%40`, `!` → `%21`, `#` → `%23`
+   - Wrong: `postgresql://user:Pass@123@host/db`
+   - Correct: `postgresql://user:Pass%40123@host/db`
+
+2. **PostgreSQL Firewall:** Azure Container Apps need firewall access
+   ```bash
+   az postgres flexible-server firewall-rule create \
+     --resource-group teamai-prod --name teamai-db \
+     --rule-name AllowAzureServices \
+     --start-ip-address 0.0.0.0 --end-ip-address 0.0.0.0
+   ```
+
+3. **Redis SSL Scheme:** Use `rediss://` (double 's') not `redis://` for Azure Redis TLS
+
+4. **Backend Env Vars:** Must set these for OAuth redirects:
+   ```bash
+   BACKEND_URL=https://teamai-backend.<region>.azurecontainerapps.io
+   FRONTEND_URL=https://teamai-frontend.<region>.azurecontainerapps.io
+   ```
+
+**Full deployment guide:** [docs/AZURE_DEPLOYMENT.md](../docs/AZURE_DEPLOYMENT.md)
+
+---
+
 ### Local Development (Current Setup)
 **Environment:** GitHub Codespaces with Docker Compose  
 **Access URLs:**
@@ -30,8 +59,21 @@ docker-compose logs backend frontend  # Check for errors
 
 ### Production Deployment to Azure
 
+#### Current Production URLs (Verified Working Dec 17, 2025)
+- **Frontend:** https://teamai-frontend.grayisland-ba13f170.eastus.azurecontainerapps.io
+- **Backend:** https://teamai-backend.grayisland-ba13f170.eastus.azurecontainerapps.io
+- **API Docs:** https://teamai-backend.grayisland-ba13f170.eastus.azurecontainerapps.io/docs
+
+#### First User Setup (Bootstrap)
+New deployments have no users. Create the first admin:
+```bash
+curl -X POST "https://teamai-backend.../api/v1/invites/bootstrap" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "bootstrap_secret": "teamai-bootstrap-2024"}'
+```
+
 #### Option 1: Azure Container Apps (Recommended for MVP)
-**Cost:** ~$143/month infrastructure + ~$25/month Groq API = $168/month total
+**Cost:** ~$96/month infrastructure + ~$25/month Groq API = ~$121/month total
 
 **Deployment Steps:**
 1. **Create Azure Resources:**
@@ -55,6 +97,12 @@ docker-compose logs backend frontend  # Check for errors
      --tier Burstable \
      --storage-size 32
    
+   # CRITICAL: Add firewall rule for Container Apps
+   az postgres flexible-server firewall-rule create \
+     --resource-group teamai-prod --name teamai-db \
+     --rule-name AllowAzureServices \
+     --start-ip-address 0.0.0.0 --end-ip-address 0.0.0.0
+   
    # Create Redis Cache
    az redis create \
      --resource-group teamai-prod \
@@ -75,8 +123,8 @@ docker-compose logs backend frontend  # Check for errors
    # Build backend
    docker build -f infrastructure/docker/Dockerfile.backend -t teamairegistry.azurecr.io/backend:latest .
    
-   # Build frontend
-   docker build -f infrastructure/docker/Dockerfile.frontend -t teamairegistry.azurecr.io/frontend:latest .
+   # Build frontend (uses --no-cache to ensure env vars are injected)
+   docker build --no-cache -f infrastructure/docker/Dockerfile.frontend -t teamairegistry.azurecr.io/frontend:latest .
    
    # Login to ACR
    az acr login --name teamairegistry
@@ -88,11 +136,12 @@ docker-compose logs backend frontend  # Check for errors
 
 3. **Store Secrets in Key Vault:**
    ```bash
+   # NOTE: Use hyphens in secret names, URL-encode passwords
    az keyvault secret set --vault-name teamai-vault --name "GOOGLE-CLIENT-ID" --value "<client_id>"
    az keyvault secret set --vault-name teamai-vault --name "GOOGLE-CLIENT-SECRET" --value "<client_secret>"
    az keyvault secret set --vault-name teamai-vault --name "JWT-SECRET-KEY" --value "<generate_secure_key>"
-   az keyvault secret set --vault-name teamai-vault --name "DATABASE-URL" --value "<postgres_connection_string>"
-   az keyvault secret set --vault-name teamai-vault --name "REDIS-URL" --value "<redis_connection_string>"
+   az keyvault secret set --vault-name teamai-vault --name "DATABASE-URL" --value "postgresql://user:Pass%40123@host:5432/db"
+   az keyvault secret set --vault-name teamai-vault --name "REDIS-URL" --value "rediss://:password@host:6380"
    ```
 
 4. **Deploy Container Apps:**
@@ -103,7 +152,7 @@ docker-compose logs backend frontend  # Check for errors
      --resource-group teamai-prod \
      --location eastus
    
-   # Deploy backend
+   # Deploy backend with REQUIRED env vars
    az containerapp create \
      --name teamai-backend \
      --resource-group teamai-prod \
@@ -117,7 +166,9 @@ docker-compose logs backend frontend  # Check for errors
        jwt-secret-key=keyvaultref:<key_vault_uri>/secrets/JWT-SECRET-KEY,identityref:<managed_identity> \
      --env-vars \
        GOOGLE_CLIENT_ID=secretref:google-client-id \
-       JWT_SECRET_KEY=secretref:jwt-secret-key
+       JWT_SECRET_KEY=secretref:jwt-secret-key \
+       BACKEND_URL=https://teamai-backend.<region>.azurecontainerapps.io \
+       FRONTEND_URL=https://teamai-frontend.<region>.azurecontainerapps.io
    
    # Deploy frontend
    az containerapp create \
@@ -127,9 +178,7 @@ docker-compose logs backend frontend  # Check for errors
      --image teamairegistry.azurecr.io/frontend:latest \
      --target-port 3000 \
      --ingress external \
-     --cpu 1 --memory 2Gi \
-     --env-vars \
-       VITE_API_URL=https://teamai-backend.<region>.azurecontainerapps.io
+     --cpu 1 --memory 2Gi
    ```
 
 5. **Configure Custom Domain (Optional):**
@@ -150,16 +199,7 @@ docker-compose logs backend frontend  # Check for errors
    ```
 
 6. **Run Database Migrations:**
-   ```bash
-   # Connect to backend container
-   az containerapp exec \
-     --name teamai-backend \
-     --resource-group teamai-prod \
-     --command "/bin/bash"
-   
-   # Inside container, run Alembic migrations
-   alembic upgrade head
-   ```
+   Migrations run automatically on container startup via `infrastructure/docker/startup.sh`
 
 7. **Update Google OAuth Redirect URIs:**
    - Go to Google Cloud Console → APIs & Services → Credentials
@@ -191,9 +231,13 @@ docker-compose logs backend frontend  # Check for errors
 
 **Setup Automated Deployments:**
 1. Create GitHub secrets:
-   - `AZURE_CREDENTIALS` (service principal)
-   - `ACR_USERNAME`, `ACR_PASSWORD`
-   - `AZURE_WEBAPP_PUBLISH_PROFILE`
+   - `AZURE_CREDENTIALS` (service principal JSON)
+   - `AZURE_SUBSCRIPTION_ID`
+   - `AZURE_ACR_USERNAME`, `AZURE_ACR_PASSWORD`
+
+2. GitHub Actions workflow: `.github/workflows/azure-deploy.yml` (already configured)
+
+3. Push to `main` branch triggers auto-deploy
 
 2. GitHub Actions workflow (`.github/workflows/deploy.yml`):
    ```yaml

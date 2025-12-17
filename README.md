@@ -193,6 +193,9 @@ make clean          # Clean build artifacts
 ## Documentation
 
 - [AI Coding Agent Instructions](.github/copilot-instructions.md) - Complete architecture and development guidelines
+- [Azure Deployment Guide](docs/AZURE_DEPLOYMENT.md) - Production deployment and troubleshooting
+- [Google OAuth Setup](docs/GOOGLE_OAUTH_SETUP.md) - OAuth configuration steps
+- [Development Progress](docs/PROGRESS.md) - Detailed progress tracking
 
 ## License
 
@@ -204,53 +207,39 @@ Project maintained by [dlai-sd](https://github.com/dlai-sd)
 
 ## Current Status
 
-**Phase:** ✅ Agent Runtime Complete + ML/AI Strategy Defined - Ready for Architecture Refactor
+**Phase:** ✅ Azure Production Deployment Verified - OAuth Flow Working End-to-End
 
-**Completed (December 16, 2025):**
+**Completed (December 17, 2025):**
 - ✅ Architecture finalization (see [AI Instructions](.github/copilot-instructions.md))
-- ✅ Complete project structure (monorepo with backend/frontend/shared)
+- ✅ Complete project structure (monorepo with backend/frontend)
 - ✅ Database schema with 11 tables (agencies, teams, users, agents, subscriptions, audit logs)
 - ✅ 3 Alembic migrations (initial schema, Google SSO, test data)
 - ✅ Google OAuth2 authentication with JWT tokens (30min expiry)
 - ✅ Role-Based Access Control (agency_admin, team_admin, team_user)
-- ✅ Invite system for controlled user onboarding
+- ✅ Invite system with bootstrap endpoint for first admin
 - ✅ Backend API (FastAPI + SQLAlchemy + Redis)
 - ✅ Frontend UI (React + TypeScript + Vite with AuthContext)
 - ✅ Protected routes with admin-level checks
-- ✅ 23 passing tests (backend API + frontend UI + integration)
 - ✅ Docker multi-stage builds (development + production)
-- ✅ Azure production deployment (Container Apps + PostgreSQL + Redis + Key Vault)
-- ✅ **Agent Runtime Engine (Recipe Evaluator with custom DAG executor)**
-- ✅ **Component Library (WebCrawler, LLMProcessor, ReportGenerator)**
-- ✅ **Groq API Integration (llama-3.1-8b-instant + llama-3.3-70b-versatile fallback)**
-- ✅ **SEO Specialist Recipe (site-audit.yaml with real API testing)**
-- ✅ **Comprehensive ML/AI Strategy Document ([docs/AI_ML_STRATEGY.md](docs/AI_ML_STRATEGY.md))**
+- ✅ **Azure Production Deployment - FULLY WORKING**
+- ✅ **GitHub Actions CI/CD Pipeline**
+- ✅ Agent Runtime Engine (Recipe Evaluator with custom DAG executor)
+- ✅ Component Library (WebCrawler, LLMProcessor, ReportGenerator)
+- ✅ Groq API Integration (llama-3.1-8b-instant + llama-3.3-70b-versatile fallback)
 
-**Production Environment:**
+**Production Environment (Verified Working):**
 - 🌐 Frontend: https://teamai-frontend.grayisland-ba13f170.eastus.azurecontainerapps.io/
 - 🔧 Backend: https://teamai-backend.grayisland-ba13f170.eastus.azurecontainerapps.io/
-- 💾 PostgreSQL: teamai-db.postgres.database.azure.com (West US)
-- ⚡ Redis: teamai-redis.redis.cache.windows.net (East US)
-- 🔐 Secrets: Azure Key Vault (teamai-vault) with Groq API key
+- 💾 PostgreSQL: teamai-db.postgres.database.azure.com
+- ⚡ Redis: teamai-redis.redis.cache.windows.net
+- 🔐 Secrets: Azure Key Vault (teamai-vault)
 - 📦 Registry: teamairegistry.azurecr.io
-- 💰 Monthly Cost: ~$143 infrastructure + $50-300 ML/AI (awaiting startup credits)
+- 💰 Monthly Cost: ~$96/month infrastructure
 
-**Agent Runtime Verified:**
-- Successfully executed SEO site-audit recipe on real website
-- Groq LLM integration working (880 tokens, $0.000066 cost)
-- Mock mode functional for testing without API costs
-- Recipe evaluator handles type coercion and template variables
-
-**Next Steps (Priority Order):**
-1. **Tomorrow:** Test production OAuth flow + verify database migrations
-2. **Week 1:** Refactor to architectural compliance (Connectors, Utils, SubscriptionTracker)
-3. **Month 1:** Implement Traditional ML layer (RandomForest, A/B testing, quality scoring)
-4. **Month 2-3:** Add Deep Learning features (quality badges, smart recommendations)
-5. **Month 6+:** Recipe generation "Agent Designer" (natural language → YAML)
-
-**Strategic Focus:** Building intelligent, self-improving agent system with multi-tenant data flywheel as competitive moat. See [AI/ML Strategy](docs/AI_ML_STRATEGY.md) for detailed roadmap.
-
-**Timeline:** Architecture refactor (1 week) → ML MVP (4 weeks) → Light DL (8 weeks) → Full DL (16 weeks)
+**Next Steps:**
+1. Test production agent execution (SEO site audit)
+2. Implement Traditional ML layer (A/B testing, quality scoring)
+3. Add more agent types (Social Media Scheduler, Lead Qualifier)
 
 ---
 

@@ -27,10 +27,41 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 redis_client = None
 
 async def get_redis():
-    """Get Redis client for OAuth state storage"""
+    """Get Redis client for OAuth state storage with proper Azure configuration"""
     global redis_client
     if redis_client is None:
-        redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
+        # Azure Redis requires SSL and specific configuration
+        redis_url = settings.REDIS_URL
+        
+        # Configure SSL if using rediss://
+        if redis_url.startswith('rediss://'):
+            import ssl
+            redis_client = redis.from_url(
+                redis_url,
+                decode_responses=True,
+                ssl_cert_reqs=ssl.CERT_NONE,  # Azure Redis uses self-signed certs
+                socket_connect_timeout=5,
+                socket_keepalive=True,
+                health_check_interval=30
+            )
+        else:
+            redis_client = redis.from_url(
+                redis_url,
+                decode_responses=True,
+                socket_connect_timeout=5,
+                socket_keepalive=True,
+                health_check_interval=30
+            )
+        
+        # Test connection
+        try:
+            await redis_client.ping()
+            print(f"[Redis] Connected successfully to {redis_url[:30]}...")
+        except Exception as e:
+            print(f"[Redis ERROR] Connection failed: {e}")
+            redis_client = None
+            raise
+    
     return redis_client
 
 

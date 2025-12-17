@@ -438,7 +438,13 @@ class RecipeEvaluator:
         # Build template context
         context = {
             'inputs': self.execution_state.get('inputs', {}),
-            'config': self.config if hasattr(self, 'config') else {}
+            'config': self.config if hasattr(self, 'config') else {},
+            # Runtime context for subscription tracking variables
+            'runtime': {
+                'agent_instance_id': self.tracking_config.get('agent_instance_id', 'test-agent'),
+                'recipe_id': self.tracking_config.get('recipe_id') or self.recipe.get('id', 'unknown'),
+                'agency_id': self.tracking_config.get('agency_id', 'test-agency')
+            }
         }
         
         # Add node outputs to context

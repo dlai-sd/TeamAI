@@ -530,26 +530,47 @@ class RecipeEvaluator:
         Returns:
             Rendered prompt
         """
-        # Build context
+        # Build context with all available data
         context = {
             'inputs': self.execution_state.get('inputs', {})
         }
-        context.update(node_inputs)
+        
+        # Add node outputs directly (not nested under 'output')
+        # This allows templates to use {{ fetch_pages.pages }} directly
+        for node_id, output in node_inputs.items():
+            if isinstance(output, dict):
+                context[node_id] = output
+            else:
+                context[node_id] = {'output': output}
         
         try:
             # Render with Jinja2
             jinja_template = Template(template)
-            return jinja_template.render(**context)
+            rendered = jinja_template.render(**context)
+            return rendered
         except TemplateError as e:
             print(f"  ⚠️  Prompt template error: {e}")
-            return template
+            # Return a fallback prompt with raw data
+            return f"Analyze this data:\n{node_inputs}"
     
     def _build_report_data(self, node_inputs: Dict) -> Dict[str, Any]:
-        """Build report data from node outputs"""
+        """Build report data from node outputs
+        
+        Handles both structured data and LLM text output
+        """
         report_data = {}
         for node_id, output in node_inputs.items():
             if isinstance(output, dict):
-                report_data.update(output)
+                # LLM output has 'content' key with the actual text
+                if 'content' in output:
+                    report_data['analysis'] = output['content']
+                    report_data['llm_metadata'] = {
+                        'model': output.get('model'),
+                        'tokens': output.get('usage', {}).get('total_tokens'),
+                        'cost': output.get('cost')
+                    }
+                else:
+                    report_data.update(output)
             else:
                 report_data[node_id] = output
         return report_data

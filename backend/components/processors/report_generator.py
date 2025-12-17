@@ -69,6 +69,23 @@ class ReportGenerator(BaseComponent):
         md += f"**Generated:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n"
         md += "---\n\n"
         
+        # If we have LLM analysis content, use it directly
+        # The LLM already formats it with sections
+        if 'analysis' in data and data['analysis']:
+            md += data['analysis']
+            md += "\n\n---\n\n"
+            
+            # Add metadata if available
+            if 'llm_metadata' in data:
+                meta = data['llm_metadata']
+                md += f"*Analysis by {meta.get('model', 'AI')} "
+                if meta.get('tokens'):
+                    md += f"({meta['tokens']} tokens)"
+                md += "*\n"
+            
+            return md
+        
+        # Fall back to structured data format
         # Executive Summary
         if 'executive_summary' in self.include_sections or 'all' in self.include_sections:
             md += "## Executive Summary\n\n"

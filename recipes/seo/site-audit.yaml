@@ -50,22 +50,44 @@ recipe:
         config:
           model: "llama-3.1-8b-instant"
           fallback_model: "llama-3.3-70b-versatile"
-          temperature: 0.2
+          temperature: 0.3
           max_tokens: 2000
           prompt_template: |
-            You are an expert SEO analyst. Analyze this website structure:
+            You are an expert SEO analyst. Analyze this website data and provide a detailed SEO audit report.
             
-            {fetch_pages.output}
+            **Website URL:** {{ inputs.website_url }}
             
-            Identify critical issues in these categories:
-            1. Missing or duplicate meta tags (title, description)
-            2. Broken internal/external links
-            3. Duplicate content across pages
-            4. Page load speed issues
-            5. Mobile responsiveness problems
-            6. Missing alt text for images
+            **Pages Crawled:** {{ fetch_pages.total_pages }}
             
-            Provide actionable recommendations for each issue.
+            {% for page in fetch_pages.pages %}
+            ---
+            **Page:** {{ page.url }}
+            - Title: {{ page.title or 'MISSING' }}
+            - Meta Description: {{ page.meta_description or 'MISSING' }}
+            - H1 Tags: {{ page.h1_tags | join(', ') or 'NONE' }}
+            - H2 Tags: {{ page.h2_tags | join(', ') or 'NONE' }}
+            - Word Count: {{ page.word_count }}
+            - Images: {{ page.images }}
+            - Internal Links: {{ page.links | length }}
+            {% endfor %}
+            
+            Based on this data, provide:
+            
+            ## Executive Summary
+            A brief overview of the website's SEO health (2-3 sentences).
+            
+            ## Critical Issues Found
+            List specific issues found with severity (High/Medium/Low):
+            - Missing or duplicate titles
+            - Missing meta descriptions
+            - Missing H1 tags
+            - Low word count pages
+            - Images without alt text
+            
+            ## Recommendations
+            Provide 3-5 actionable recommendations to improve SEO, prioritized by impact.
+            
+            Be specific and reference actual data from the crawl.
         depends_on: ["fetch_pages"]
       
       # Node 3: Report Generator

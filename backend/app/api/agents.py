@@ -177,7 +177,9 @@ async def test_agent_live(url: str = "https://example.com"):
         # Truncate output for response size
         output = result.get('output', {})
         if isinstance(output, dict) and 'content' in output:
-            output['content'] = output['content'][:2000] + '...(truncated)'
+            # Keep more content - 4000 chars should show the full report
+            if len(output['content']) > 4000:
+                output['content'] = output['content'][:4000] + '\n\n...(truncated)'
         
         return {
             'success': result['success'],

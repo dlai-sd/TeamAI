@@ -12,12 +12,10 @@
         "ms-python.pylint",
         "ms-azuretools.vscode-docker",
         "GitHub.copilot",
-        "GitHub.copilot-chat",
         "eamodio.gitlens",
         "streetsidesoftware.code-spell-checker",
         "ms-vscode.makefile-tools",
-        "redhat.vscode-yaml",
-        "esbenp.prettier-vscode"
+        "redhat.vscode-yaml"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
@@ -63,7 +61,7 @@
     }
   },
   
-  "postCreateCommand": "pip install -r backend/requirements.txt && cd backend && alembic upgrade head || echo 'Database migrations will run when services start'",
+  "postCreateCommand": "rm -rf ~/.vscode-remote/data/User/workspaceStorage/*/vscode.lock && pip install -r backend/requirements.txt && cd backend && alembic upgrade head || echo 'Database migrations will run when services start'",
   
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},

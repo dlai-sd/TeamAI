@@ -29,6 +29,8 @@ export default function DashboardPage() {
   const [runningAudit, setRunningAudit] = useState(false);
   const [auditResult, setAuditResult] = useState<any>(null);
   const [auditError, setAuditError] = useState<string | null>(null);
+  const [targetUrl, setTargetUrl] = useState('https://example.com');
+  const [expandedResult, setExpandedResult] = useState(false);
 
   // Mock data for agents and teams hierarchy
   const teams: Team[] = [
@@ -52,9 +54,12 @@ export default function DashboardPage() {
     setRunningAudit(true);
     setAuditResult(null);
     setAuditError(null);
+    setExpandedResult(false);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/v1/agents/test-live`);
+      // Build URL with target parameter
+      const apiUrl = `${API_BASE_URL}/v1/agents/test-live?url=${encodeURIComponent(targetUrl)}`;
+      const response = await fetch(apiUrl);
       const data = await response.json();
       
       if (data.success) {
@@ -116,19 +121,41 @@ export default function DashboardPage() {
                 <p>Analyze any website for SEO issues using AI</p>
               </div>
             </div>
-            <button 
-              className={`audit-button ${runningAudit ? 'running' : ''}`}
-              onClick={runSEOAudit}
-              disabled={runningAudit}
-            >
-              {runningAudit ? '⏳ Running...' : '▶️ Run Audit'}
-            </button>
+            <div className="audit-controls">
+              <div className="url-input-group">
+                <label htmlFor="target-url">Target URL:</label>
+                <input
+                  id="target-url"
+                  type="url"
+                  value={targetUrl}
+                  onChange={(e) => setTargetUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  disabled={runningAudit}
+                  className="url-input"
+                />
+              </div>
+              <button 
+                className={`audit-button ${runningAudit ? 'running' : ''}`}
+                onClick={runSEOAudit}
+                disabled={runningAudit || !targetUrl}
+              >
+                {runningAudit ? '⏳ Running...' : '▶️ Run Audit'}
+              </button>
+            </div>
           </div>
 
           {/* Audit Result */}
           {auditResult && (
             <div className="audit-result success">
-              <h4>✅ Audit Complete</h4>
+              <div className="result-header">
+                <h4>✅ Audit Complete for {auditResult.input?.url || targetUrl}</h4>
+                <button 
+                  className="expand-btn"
+                  onClick={() => setExpandedResult(!expandedResult)}
+                >
+                  {expandedResult ? '📖 Collapse' : '📖 Expand'}
+                </button>
+              </div>
               <div className="result-metrics">
                 <span>⏱️ {auditResult.metrics.execution_time_ms}ms</span>
                 <span>🎯 {auditResult.metrics.tokens_used} tokens</span>
@@ -136,7 +163,12 @@ export default function DashboardPage() {
                 <span>📊 {auditResult.metrics.nodes_executed} nodes</span>
               </div>
               {auditResult.output_preview?.content && (
-                <pre className="result-preview">{auditResult.output_preview.content}</pre>
+                <pre className={`result-preview ${expandedResult ? 'expanded' : ''}`}>
+                  {expandedResult 
+                    ? auditResult.output_preview.content 
+                    : auditResult.output_preview.content.substring(0, 500) + '...'
+                  }
+                </pre>
               )}
             </div>
           )}

@@ -144,10 +144,13 @@ async def test_agent_system():
 
 
 @router.get("/test-live")
-async def test_agent_live():
+async def test_agent_live(url: str = "https://example.com"):
     """
     Test agent system with REAL Groq API calls (no auth for demo)
     WARNING: This costs money! Use sparingly.
+    
+    Args:
+        url: Target website URL to analyze (default: example.com)
     """
     import os
     try:
@@ -158,11 +161,15 @@ async def test_agent_live():
                 'message': 'GROQ_API_KEY not configured'
             }
         
+        # Validate URL
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+        
         recipe_path = Path(__file__).parent.parent.parent.parent / "recipes" / "seo" / "site-audit.yaml"
         evaluator = RecipeEvaluator(recipe_path=str(recipe_path), mock_mode=False)
         
         result = await evaluator.execute({
-            'website_url': 'https://example.com',
+            'website_url': url,
             'max_depth': 1,
             'include_images': False
         })
@@ -170,11 +177,12 @@ async def test_agent_live():
         # Truncate output for response size
         output = result.get('output', {})
         if isinstance(output, dict) and 'content' in output:
-            output['content'] = output['content'][:1000] + '...(truncated)'
+            output['content'] = output['content'][:2000] + '...(truncated)'
         
         return {
             'success': result['success'],
-            'message': 'Agent executed with LIVE Groq API',
+            'message': f'Agent executed SEO audit for {url}',
+            'input': {'url': url},
             'metrics': result['metrics'],
             'output_preview': output
         }

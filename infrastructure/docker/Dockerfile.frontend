@@ -20,19 +20,15 @@ FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Build argument for API URL (set during docker build)
-ARG VITE_API_BASE_URL=http://localhost:8000/api
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-
 # Copy package files and install dependencies
 COPY frontend/package*.json ./
 RUN npm ci
 
-# Copy source code
+# Copy source code (including .env.production)
 COPY frontend/ ./
 
-# Build application (Vite will embed VITE_API_BASE_URL)
-RUN npm run build
+# Build application with production mode (reads .env.production)
+RUN npm run build -- --mode production
 
 # Production stage - serve static files with nginx
 FROM nginx:alpine AS production

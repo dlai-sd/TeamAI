@@ -49,6 +49,8 @@ jobs:
         run: |
           docker build \
             -f infrastructure/docker/Dockerfile.frontend \
+            --no-cache \
+            --build-arg CACHE_BUST=${{ github.sha }} \
             -t ${{ env.ACR_NAME }}.azurecr.io/teamai-frontend:${{ github.sha }} \
             -t ${{ env.ACR_NAME }}.azurecr.io/teamai-frontend:latest \
             .

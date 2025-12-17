@@ -14,8 +14,9 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     LOG_LEVEL: str = "INFO"
     
-    # API
+    # API - Set via BACKEND_URL env var in production
     API_BASE_URL: str = "http://localhost:8000"
+    BACKEND_URL: str = ""  # If set, overrides API_BASE_URL
     
     # Database
     DATABASE_URL: str = "postgresql://teamai:teamai_dev_password@postgres:5432/teamai"
@@ -46,7 +47,7 @@ class Settings(BaseSettings):
     # Google OAuth2 (SSO Only)
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
-    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/oauth2/callback"
+    GOOGLE_REDIRECT_URI: str = ""  # Auto-constructed from backend URL if not set
     GOOGLE_WORKSPACE_DOMAIN: str = ""  # Optional: Restrict to specific domain (e.g., 'company.com')
     
     # Frontend URL (for email links)
@@ -66,6 +67,18 @@ class Settings(BaseSettings):
     
     # Logging
     LOG_LEVEL: str = "INFO"
+    
+    @property
+    def effective_backend_url(self) -> str:
+        """Get the effective backend URL (BACKEND_URL if set, else API_BASE_URL)"""
+        return self.BACKEND_URL or self.API_BASE_URL
+    
+    @property
+    def effective_redirect_uri(self) -> str:
+        """Get the OAuth redirect URI (auto-construct if not explicitly set)"""
+        if self.GOOGLE_REDIRECT_URI:
+            return self.GOOGLE_REDIRECT_URI
+        return f"{self.effective_backend_url}/api/v1/auth/oauth2/callback"
     
     class Config:
         env_file = ".env"

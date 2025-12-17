@@ -14,7 +14,7 @@ class GoogleOAuthClient:
     def __init__(self):
         self.client_id = settings.GOOGLE_CLIENT_ID
         self.client_secret = settings.GOOGLE_CLIENT_SECRET
-        self.redirect_uri = settings.GOOGLE_REDIRECT_URI
+        self.redirect_uri = settings.effective_redirect_uri  # Use property for dynamic URL
         
         # Google OAuth endpoints
         self.authorize_url = "https://accounts.google.com/o/oauth2/v2/auth"

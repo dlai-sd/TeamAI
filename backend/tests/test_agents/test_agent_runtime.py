@@ -131,8 +131,8 @@ class TestAgentInitialization:
         info = agent.get_agent_info()
         
         assert 'id' in info
-        assert info['name'] == 'TestBot'
-        assert info['avatar'] == '🤖'
+        assert info['custom_name'] == 'TestBot'
+        assert info['avatar_icon'] == '🤖'
         assert info['is_active'] is True
 
 

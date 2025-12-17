@@ -187,9 +187,11 @@ class RecipeEvaluator:
                         raise
             
             execution_status = 'success'
+            self.metrics['execution_status'] = execution_status
             
         except Exception as e:
             execution_status = 'failed'
+            self.metrics['execution_status'] = execution_status
             print(f"\n❌ Recipe execution failed: {e}")
             
             # Calculate metrics even on failure

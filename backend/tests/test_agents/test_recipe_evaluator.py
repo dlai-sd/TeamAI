@@ -128,7 +128,7 @@ class TestRecipeEvaluatorInitialization:
     def test_init_with_recipe_dict(self, mock_recipe_simple):
         """Should initialize with recipe dict"""
         evaluator = RecipeEvaluator(
-            recipe=mock_recipe_simple,
+            recipe_definition=mock_recipe_simple,
             mock_mode=True
         )
         assert evaluator.recipe == mock_recipe_simple
@@ -143,7 +143,7 @@ class TestRecipeEvaluatorInitialization:
             'agency_id': 'agency-789'
         }
         evaluator = RecipeEvaluator(
-            recipe=mock_recipe_simple,
+            recipe_definition=mock_recipe_simple,
             tracking_config=tracking_config,
             mock_mode=True
         )
@@ -249,7 +249,7 @@ class TestSecretInjection:
         }
         
         evaluator = RecipeEvaluator(
-            recipe=mock_recipe_with_secrets,
+            recipe_definition=mock_recipe_with_secrets,
             tracking_config=tracking_config,
             mock_mode=True
         )
@@ -432,7 +432,7 @@ class TestErrorHandling:
         }
         
         evaluator = RecipeEvaluator(
-            recipe=mock_recipe_simple,
+            recipe_definition=mock_recipe_simple,
             tracking_config=tracking_config,
             mock_mode=True
         )

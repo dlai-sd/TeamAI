@@ -8,7 +8,7 @@
   border-left: 1px solid #e5e7eb;
   overflow-y: auto;
   padding: 1rem;
-  z-index: 90;
+  z-index: 50; /* Below header (200) and sidebar (100) */
 }
 
 .panel-section {

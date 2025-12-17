@@ -129,8 +129,10 @@ async def google_callback(
     try:
         redis_conn = await get_redis()
         domain = await redis_conn.get(f"oauth_state:{state}")
-        print(f"[OAuth] Redis lookup result: {domain}")
+        print(f"[OAuth] Redis lookup result: '{domain}' (type: {type(domain).__name__})")
         
+        # Redis returns None if key doesn't exist
+        # Empty string is valid (means no domain restriction)
         if domain is None:
             print(f"[OAuth ERROR] State not found in Redis: oauth_state:{state[:10]}...")
             # Check if Redis is working at all

@@ -11,10 +11,11 @@ from app.models.agent import AgentInstance, AgentRole, Cookbook, Recipe
 @pytest.fixture
 async def test_agency(db_session, db_engine):
     """Create test agency"""
+    unique_id = uuid4()
     agency = Agency(
-        id=uuid4(),
-        name="Test Agency",
-        billing_email="test@example.com",
+        id=unique_id,
+        name=f"Test Agency {unique_id}",
+        billing_email=f"test-{unique_id}@example.com",
         subscription_plan="professional",
         is_active=True
     )

@@ -16,10 +16,11 @@ from app.utils.security import hash_password
 @pytest.fixture
 async def test_agency(db_session: AsyncSession, db_engine):
     """Create test agency (depends on db_engine to ensure tables exist)"""
+    unique_id = uuid4()
     agency = Agency(
-        id=uuid4(),
-        name="Test Agency",
-        billing_email="billing@test.com",
+        id=unique_id,
+        name=f"Test Agency {unique_id}",
+        billing_email=f"billing-{unique_id}@test.com",
         subscription_plan="professional",
         is_active=True
     )

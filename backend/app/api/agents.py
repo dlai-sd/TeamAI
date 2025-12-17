@@ -22,9 +22,11 @@ from agents.recipe_evaluator import RecipeEvaluator
 from agents.agent import Agent, create_agent
 from app.utils.security import get_current_user
 from app.utils.db import get_db
+from app.utils.rls import set_rls_context, get_agency_id_from_user
 from app.models.schemas import UserResponse
 from app.models.agent import AgentInstance, AgentRole, Cookbook
 from app.models.agency import Team
+from app.services.authorization_service import AuthorizationService
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 
@@ -182,16 +184,18 @@ async def allocate_agent(
     Validates subscription limits and team ownership
     """
     try:
-        # Validate team exists and belongs to user's agency
-        team_stmt = select(Team).where(Team.id == request.team_id)
-        team_result = await db.execute(team_stmt)
-        team = team_result.scalar_one_or_none()
+        # Set RLS context for multi-tenant isolation
+        agency_id = get_agency_id_from_user(current_user)
+        await set_rls_context(db, agency_id)
         
-        if not team:
-            raise HTTPException(status_code=404, detail=f"Team {request.team_id} not found")
+        # Initialize authorization service
+        auth_service = AuthorizationService(db)
         
-        # TODO: Validate current_user is admin of team's agency
-        # For MVP, assuming user has permission
+        # Validate user is agency admin
+        await auth_service.validate_agency_admin(current_user)
+        
+        # Validate team ownership
+        team = await auth_service.validate_team_ownership(current_user, request.team_id)
         
         # Validate agent_role exists
         role_stmt = select(AgentRole).where(AgentRole.id == request.agent_role_id)
@@ -208,8 +212,8 @@ async def allocate_agent(
                 detail=f"AgentRole {agent_role.name} is not available (status: {agent_role.status})"
             )
         
-        # TODO: Check subscription limits
-        # For MVP, allowing unlimited allocation
+        # Check subscription limits
+        await auth_service.check_subscription_limits(agency_id, request.agent_role_id)
         
         # Create AgentInstance
         agent_instance = AgentInstance(
@@ -225,6 +229,9 @@ async def allocate_agent(
         
         db.add(agent_instance)
         await db.flush()
+        
+        # Increment subscription allocation count
+        await auth_service.increment_allocation(agency_id, request.agent_role_id)
         
         # Initialize Agent runtime to get available recipes
         agent = await create_agent(agent_instance.id, db)
@@ -300,18 +307,30 @@ async def deactivate_agent(
     Sets is_active=False instead of deleting record (audit trail)
     """
     try:
-        # Load agent instance
+        # Set RLS context
+        agency_id = get_agency_id_from_user(current_user)
+        await set_rls_context(db, agency_id)
+        
+        # Initialize authorization service
+        auth_service = AuthorizationService(db)
+        
+        # Validate user is agency admin
+        await auth_service.validate_agency_admin(current_user)
+        
+        # Load agent instance (RLS will filter by agency)
         stmt = select(AgentInstance).where(AgentInstance.id == agent_instance_id)
         result = await db.execute(stmt)
         agent_instance = result.scalar_one_or_none()
         
         if not agent_instance:
-            raise HTTPException(status_code=404, detail=f"AgentInstance {agent_instance_id} not found")
-        
-        # TODO: Validate current_user is admin of agent's agency
+            raise HTTPException(status_code=404, detail=f"AgentInstance {agent_instance_id} not found or access denied")
         
         # Deactivate (soft delete)
         agent_instance.is_active = False
+        
+        # Decrement subscription allocation count
+        await auth_service.decrement_allocation(agency_id, agent_instance.agent_role_id)
+        
         await db.commit()
         
         return {

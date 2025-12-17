@@ -11,8 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.utils.security import get_current_user
 from app.utils.db import get_db
+from app.utils.rls import set_rls_context, get_agency_id_from_user
 from app.models.schemas import UserResponse
 from app.services.task_service import TaskQueueService
+from app.services.authorization_service import AuthorizationService
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -68,6 +70,10 @@ async def create_task(
     Task will be in 'pending' status until executed
     """
     try:
+        # Set RLS context for multi-tenant isolation
+        agency_id = get_agency_id_from_user(current_user)
+        await set_rls_context(db, agency_id)
+        
         service = TaskQueueService(db)
         task = await service.create_task(
             agent_instance_id=request.agent_instance_id,
@@ -112,6 +118,10 @@ async def execute_task(
     Task status will change: pending → running → completed/failed
     """
     try:
+        # Set RLS context
+        agency_id = get_agency_id_from_user(current_user)
+        await set_rls_context(db, agency_id)
+        
         service = TaskQueueService(db)
         result = await service.execute_task(task_id, mock_mode)
         
@@ -142,6 +152,10 @@ async def execute_task_async(
     Use GET /tasks/{task_id} to check status
     """
     try:
+        # Set RLS context
+        agency_id = get_agency_id_from_user(current_user)
+        await set_rls_context(db, agency_id)
+        
         service = TaskQueueService(db)
         task = await service.get_task(task_id)
         
@@ -188,6 +202,10 @@ async def get_task(
     Get task details by ID
     """
     try:
+        # Set RLS context
+        agency_id = get_agency_id_from_user(current_user)
+        await set_rls_context(db, agency_id)
+        
         service = TaskQueueService(db)
         task = await service.get_task(task_id)
         
@@ -232,6 +250,10 @@ async def list_tasks(
     - offset: Pagination offset
     """
     try:
+        # Set RLS context
+        agency_id = get_agency_id_from_user(current_user)
+        await set_rls_context(db, agency_id)
+        
         if limit > 100:
             limit = 100
         
@@ -282,6 +304,10 @@ async def cancel_task(
     Only tasks with status='pending' can be cancelled
     """
     try:
+        # Set RLS context
+        agency_id = get_agency_id_from_user(current_user)
+        await set_rls_context(db, agency_id)
+        
         service = TaskQueueService(db)
         success = await service.cancel_task(task_id)
         
@@ -316,6 +342,10 @@ async def get_task_statistics(
     Returns counts by status (pending, running, completed, failed)
     """
     try:
+        # Set RLS context
+        agency_id = get_agency_id_from_user(current_user)
+        await set_rls_context(db, agency_id)
+        
         service = TaskQueueService(db)
         stats = await service.get_task_statistics(agent_instance_id)
         

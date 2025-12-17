@@ -16,7 +16,9 @@ if str(backend_path) not in sys.path:
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from pydantic import ValidationError
 from app.models.agent import AgentRole, Cookbook, Recipe
+from agents.recipe_schema import validate_cookbook_yaml, validate_recipe_yaml
 
 
 class CookbookLoader:

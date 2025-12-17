@@ -19,6 +19,7 @@ from sqlalchemy import select
 
 from app.models.agent import AgentInstance, Recipe, Cookbook, AgentRole
 from agents.recipe_evaluator import RecipeEvaluator
+from agents.recipe_schema import validate_recipe_yaml, validate_recipe_inputs
 from components.subscription_tracker import SubscriptionTracker
 
 
@@ -187,6 +188,13 @@ class Agent:
         # Extract yaml_definition from database (JSONB field)
         recipe_yaml = recipe.yaml_definition
         
+        # Validate recipe schema and inputs
+        try:
+            validated_recipe_schema = validate_recipe_yaml({'recipe': recipe_yaml})
+            validated_inputs = validate_recipe_inputs(validated_recipe_schema, inputs)
+        except Exception as e:
+            raise ValueError(f"Input validation failed: {e}")
+        
         if not recipe_yaml:
             raise ValueError(f"Recipe {recipe_id} has no yaml_definition in database")
         
@@ -204,8 +212,8 @@ class Agent:
             mock_mode=mock_mode
         )
         
-        # Execute recipe
-        result = await evaluator.execute(inputs)
+        # Execute recipe with validated inputs
+        result = await evaluator.execute(validated_inputs)
         
         # Update agent activity timestamp
         self.agent_instance.last_active_at = datetime.now(timezone.utc)

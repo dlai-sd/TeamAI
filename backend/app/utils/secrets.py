@@ -265,10 +265,23 @@ class SecretInjector:
             
         Returns:
             Actual secret value from Key Vault
+            
+        Raises:
+            ValueError: If secret reference is malformed
         """
+        import re
+        
         # Check cache first
         if secret_ref in self.secret_cache:
             return self.secret_cache[secret_ref]
+        
+        # Validate secret reference format
+        if not re.match(r'^secret:(team:)?[a-z_][a-z0-9_]*$', secret_ref):
+            raise ValueError(
+                f"Invalid secret reference: {secret_ref}. "
+                f"Must match format 'secret:key_name' or 'secret:team:key_name' "
+                f"(lowercase letters, numbers, underscores only)"
+            )
         
         # Parse secret reference
         secret_key = secret_ref.replace('secret:', '')

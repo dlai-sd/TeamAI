@@ -10,6 +10,7 @@ from typing import Dict, Any, List, Optional, Set
 from pathlib import Path
 from datetime import datetime
 from jinja2 import Template, TemplateError
+import jinja2
 
 # Add backend to path for imports
 backend_path = Path(__file__).parent.parent
@@ -78,7 +79,8 @@ class RecipeEvaluator:
             'execution_time_ms': 0,
             'total_cost': 0.0,
             'tokens_used': 0,
-            'nodes_executed': 0
+            'nodes_executed': 0,
+            'nodes_failed': 0
         }
         
         # Initialize subscription tracker (mandatory for billing)
@@ -182,6 +184,7 @@ class RecipeEvaluator:
                         print(f"⚠️  Node {node_id} failed (allowed): {e}")
                         self.execution_state[f"{node_id}.error"] = str(e)
                         self.execution_state[f"{node_id}.status"] = 'failed'
+                        self.metrics['nodes_failed'] += 1
                     else:
                         print(f"❌ Node {node_id} failed (critical): {e}")
                         raise
@@ -233,6 +236,7 @@ class RecipeEvaluator:
                     'status': execution_status,
                     'metadata': {
                         'nodes_executed': self.metrics['nodes_executed'],
+                        'nodes_failed': self.metrics['nodes_failed'],
                         'recipe_version': self.recipe.get('version', '1.0.0')
                     }
                 })
@@ -455,6 +459,10 @@ class RecipeEvaluator:
                     # Try to convert to appropriate type
                     resolved[key] = self._cast_value(rendered)
                     
+                except jinja2.exceptions.UndefinedError as e:
+                    raise ValueError(f"Template variable not found in '{key}': {e}") from e
+                except jinja2.exceptions.TemplateSyntaxError as e:
+                    raise ValueError(f"Invalid template syntax in '{key}': {e}") from e
                 except TemplateError as e:
                     print(f"  ⚠️  Template error in {key}: {e}")
                     resolved[key] = value
@@ -462,6 +470,7 @@ class RecipeEvaluator:
                 # Recursively interpolate nested dicts
                 resolved[key] = self._interpolate_config(value)
             else:
+                resolved[key] = value
                 resolved[key] = value
         
         return resolved

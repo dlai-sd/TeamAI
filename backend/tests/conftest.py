@@ -1,22 +1,101 @@
 """Pytest configuration and fixtures"""
 import pytest
-from typing import Generator
-from fastapi.testclient import TestClient
+import asyncio
+from typing import Generator, AsyncGenerator
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.pool import NullPool
+from sqlalchemy.types import TypeDecorator, CHAR
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+import uuid
+
 from app.main import app
+from app.utils.db import Base
+
+
+# UUID type that works with SQLite
+class UUID(TypeDecorator):
+    """Platform-independent UUID type."""
+    impl = CHAR
+    cache_ok = True
+
+    def load_dialect_impl(self, dialect):
+        if dialect.name == 'postgresql':
+            return dialect.type_descriptor(PG_UUID())
+        else:
+            return dialect.type_descriptor(CHAR(36))
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return value
+        elif dialect.name == 'postgresql':
+            return str(value)
+        else:
+            if not isinstance(value, uuid.UUID):
+                return str(value)
+            else:
+                return str(value)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return value
+        else:
+            if not isinstance(value, uuid.UUID):
+                return uuid.UUID(value)
+            else:
+                return value
+
+
+# Test database URL (in-memory SQLite for fast tests)
+TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create event loop for async tests"""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture
-def client() -> Generator:
-    """FastAPI test client"""
-    with TestClient(app) as test_client:
-        yield test_client
+async def db_engine():
+    """Create test database engine"""
+    engine = create_async_engine(
+        TEST_DATABASE_URL,
+        poolclass=NullPool,
+        echo=False
+    )
+    
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    yield engine
+    
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    
+    await engine.dispose()
 
 
 @pytest.fixture
-def mock_db():
-    """Mock database session"""
-    # TODO: Implement mock database
-    pass
+async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
+    """Create test database session"""
+    async_session = async_sessionmaker(
+        db_engine,
+        class_=AsyncSession,
+        expire_on_commit=False
+    )
+    
+    async with async_session() as session:
+        yield session
+
+
+@pytest.fixture
+async def client() -> AsyncGenerator[AsyncClient, None]:
+    """Async HTTP test client"""
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
 
 
 @pytest.fixture

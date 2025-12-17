@@ -1,7 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// API URL injected at build time
+declare const __API_BASE_URL__: string;
+const API_BASE_URL = __API_BASE_URL__.replace(/\/api$/, '');
 
 interface User {
   id: string;

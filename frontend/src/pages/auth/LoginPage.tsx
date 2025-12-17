@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import './LoginPage.css';
 
+// API URL injected at build time
+declare const __API_BASE_URL__: string;
+
 export default function LoginPage() {
   const { isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
@@ -36,7 +39,7 @@ export default function LoginPage() {
           <p className="subtitle">Sign in with your Google account to continue</p>
 
           <a 
-            href={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/auth/google/login`}
+            href={`${__API_BASE_URL__.replace(/\/api$/, '')}/api/v1/auth/google/login`}
             className="google-login-btn"
           >
             <svg className="google-icon" viewBox="0 0 24 24">

@@ -2,7 +2,7 @@
 Recipe YAML Schema Validation (Pydantic)
 Ensures recipes conform to expected structure before execution
 """
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Dict, Any, List, Optional, Union
 from enum import Enum
 
@@ -35,8 +35,9 @@ class RecipeInputSchema(BaseModel):
     range: Optional[List[Union[int, float]]] = Field(None, description="Min/max range for numeric types")
     description: Optional[str] = Field(None, description="Human-readable description")
     
-    @validator('range')
-    def validate_range(cls, v, values):
+    @field_validator('range')
+    @classmethod
+    def validate_range(cls, v):
         """Ensure range has exactly 2 elements [min, max]"""
         if v is not None and len(v) != 2:
             raise ValueError("Range must have exactly 2 elements [min, max]")
@@ -44,13 +45,14 @@ class RecipeInputSchema(BaseModel):
             raise ValueError("Range min must be less than max")
         return v
     
-    @validator('default')
-    def validate_default_type(cls, v, values):
+    @model_validator(mode='after')
+    def validate_default_type(self):
         """Ensure default value matches declared type"""
+        v = self.default
         if v is None:
-            return v
+            return self
         
-        input_type = values.get('type')
+        input_type = self.type
         if input_type == InputType.STRING and not isinstance(v, str):
             raise ValueError(f"Default value must be string, got {type(v)}")
         elif input_type == InputType.INTEGER and not isinstance(v, int):
@@ -60,7 +62,7 @@ class RecipeInputSchema(BaseModel):
         elif input_type == InputType.BOOLEAN and not isinstance(v, bool):
             raise ValueError(f"Default value must be boolean, got {type(v)}")
         
-        return v
+        return self
 
 
 class WorkflowNodeSchema(BaseModel):
@@ -71,7 +73,8 @@ class WorkflowNodeSchema(BaseModel):
     secrets: Optional[Dict[str, str]] = Field(None, description="Secret references (secret:key_name)")
     depends_on: Optional[List[str]] = Field(None, description="Node IDs this node depends on")
     
-    @validator('component')
+    @field_validator('component')
+    @classmethod
     def validate_component(cls, v):
         """Ensure component is registered"""
         valid_components = [
@@ -105,11 +108,11 @@ class WorkflowSchema(BaseModel):
     edges: List[WorkflowEdgeSchema] = Field(..., description="Workflow edges (execution order)")
     output: WorkflowOutputSchema = Field(..., description="Final output definition")
     
-    @root_validator(skip_on_failure=True)
-    def validate_workflow_graph(cls, values):
+    @model_validator(mode='after')
+    def validate_workflow_graph(self):
         """Validate workflow is a valid DAG"""
-        nodes = values.get('nodes', [])
-        edges = values.get('edges', [])
+        nodes = self.nodes
+        edges = self.edges
         
         # Build node ID set
         node_ids = {node.id for node in nodes}
@@ -129,13 +132,13 @@ class WorkflowSchema(BaseModel):
                         raise ValueError(f"Node {node.id} depends on unknown node: {dep}")
         
         # Validate output source references existing node
-        output = values.get('output')
+        output = self.output
         if output:
             output_node_id = output.source.split('.')[0]
             if output_node_id not in node_ids:
                 raise ValueError(f"Output references unknown node: {output_node_id}")
         
-        return values
+        return self
 
 
 class ComplianceSchema(BaseModel):
@@ -164,7 +167,8 @@ class RecipeSchema(BaseModel):
     compliance: ComplianceSchema = Field(..., description="Tracking/billing configuration")
     ab_testing: Optional[ABTestingSchema] = Field(None, description="A/B testing configuration")
     
-    @validator('version')
+    @field_validator('version')
+    @classmethod
     def validate_semver(cls, v):
         """Validate semantic versioning format"""
         parts = v.split('.')
@@ -186,7 +190,8 @@ class CookbookSchema(BaseModel):
     subscription_limits: Dict[str, Any] = Field(default_factory=dict, description="Subscription tier limits")
     pricing: Optional[Dict[str, Any]] = Field(None, description="Pricing information")
     
-    @validator('version')
+    @field_validator('version')
+    @classmethod
     def validate_semver(cls, v):
         """Validate semantic versioning format"""
         parts = v.split('.')

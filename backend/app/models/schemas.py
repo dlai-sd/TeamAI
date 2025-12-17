@@ -3,7 +3,7 @@ Pydantic schemas for API request/response validation
 """
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from uuid import UUID
 
 from app.models import UserRole, AuthProvider, InviteStatus
@@ -20,7 +20,8 @@ class UserRegisterRequest(BaseModel):
     full_name: str = Field(..., min_length=2)
     agency_name: str = Field(..., min_length=2, description="Agency name for new agency")
     
-    @validator("password")
+    @field_validator("password")
+    @classmethod
     def password_strength(cls, v):
         """Ensure password has minimum strength"""
         if not any(c.isupper() for c in v):
@@ -109,7 +110,8 @@ class InviteCreateRequest(BaseModel):
     role: UserRole = Field(..., description="Role to assign: team_user, team_admin, or agency_admin")
     team_id: Optional[UUID] = Field(None, description="Team to assign (required for non-admin roles)")
     
-    @validator("role")
+    @field_validator("role")
+    @classmethod
     def validate_role(cls, v):
         """Ensure role is valid"""
         if v not in [UserRole.TEAM_USER, UserRole.TEAM_ADMIN, UserRole.AGENCY_ADMIN]:
@@ -140,7 +142,8 @@ class InviteAcceptRequest(BaseModel):
     token: str = Field(..., description="Invite token from email link")
     password: Optional[str] = Field(None, min_length=8, description="Password for email/password auth")
     
-    @validator("password")
+    @field_validator("password")
+    @classmethod
     def password_strength(cls, v):
         """Ensure password has minimum strength (if provided)"""
         if v is None:

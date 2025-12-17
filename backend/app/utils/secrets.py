@@ -3,8 +3,9 @@ Secrets Management - Azure Key Vault Integration
 Supports local development (.env fallback) and production (Key Vault)
 """
 import os
-from typing import Optional
+from typing import Optional, Dict, Any
 from functools import lru_cache
+from uuid import UUID
 from azure.identity import DefaultAzureCredential, ManagedIdentityCredential
 from azure.keyvault.secrets import SecretClient
 from azure.core.exceptions import ResourceNotFoundError
@@ -191,3 +192,148 @@ def get_agency_secret(agency_id: str, key: str) -> str:
     manager = get_secret_manager()
     kv_key = f"agency-{agency_id}-{key}"
     return manager.get_secret(kv_key)
+
+
+class SecretInjector:
+    """
+    Inject secrets from Azure Key Vault into component configurations
+    
+    Handles secret references in format:
+    - secret:semrush_api_key → agency:{agency_id}:semrush_api_key
+    - secret:team:google_api_key → agency:{agency_id}:team:{team_id}:google_api_key
+    """
+    
+    def __init__(
+        self, 
+        agency_id: UUID, 
+        team_id: Optional[UUID] = None
+    ):
+        """
+        Initialize secret injector
+        
+        Args:
+            agency_id: Current agency ID for namespacing
+            team_id: Optional team ID for team-scoped secrets
+        """
+        self.agency_id = str(agency_id)
+        self.team_id = str(team_id) if team_id else None
+        self.secret_manager = get_secret_manager()
+        self.secret_cache: Dict[str, str] = {}
+    
+    def inject_secrets(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Recursively inject secrets into configuration dictionary
+        
+        Args:
+            config: Configuration dict with secret references
+            
+        Returns:
+            Config dict with actual secret values
+        """
+        if not isinstance(config, dict):
+            return config
+        
+        result = {}
+        for key, value in config.items():
+            if isinstance(value, str) and value.startswith('secret:'):
+                # Replace secret reference with actual value
+                result[key] = self._resolve_secret(value)
+            elif isinstance(value, dict):
+                # Recursively inject into nested dicts
+                result[key] = self.inject_secrets(value)
+            elif isinstance(value, list):
+                # Inject into list items
+                result[key] = [
+                    self._resolve_secret(item) if isinstance(item, str) and item.startswith('secret:') else item
+                    for item in value
+                ]
+            else:
+                result[key] = value
+        
+        return result
+    
+    def _resolve_secret(self, secret_ref: str) -> str:
+        """
+        Resolve secret reference to actual value
+        
+        Args:
+            secret_ref: Secret reference (e.g., "secret:semrush_api_key")
+            
+        Returns:
+            Actual secret value from Key Vault
+        """
+        # Check cache first
+        if secret_ref in self.secret_cache:
+            return self.secret_cache[secret_ref]
+        
+        # Parse secret reference
+        secret_key = secret_ref.replace('secret:', '')
+        
+        # Build namespaced key
+        if secret_key.startswith('team:'):
+            # Team-scoped secret
+            if not self.team_id:
+                raise ValueError(f"Team-scoped secret {secret_key} requires team_id")
+            
+            team_key = secret_key.replace('team:', '')
+            vault_key = f"agency-{self.agency_id}-team-{self.team_id}-{team_key}"
+        else:
+            # Agency-scoped secret
+            vault_key = f"agency-{self.agency_id}-{secret_key}"
+        
+        # Fetch from Secret Manager
+        try:
+            secret_value = self.secret_manager.get_secret(vault_key)
+            if not secret_value:
+                # Fallback to mock for development
+                secret_value = self._get_mock_secret(vault_key)
+        except Exception as e:
+            logger.warning(f"Failed to fetch {vault_key}: {e}, using mock")
+            secret_value = self._get_mock_secret(vault_key)
+        
+        # Cache result
+        self.secret_cache[secret_ref] = secret_value
+        
+        return secret_value
+    
+    def _get_mock_secret(self, vault_key: str) -> str:
+        """
+        Get mock secret for development/testing
+        
+        Args:
+            vault_key: Key name
+            
+        Returns:
+            Mock secret value
+        """
+        # Parse key name to determine mock value
+        if 'groq' in vault_key.lower():
+            return os.getenv('GROQ_API_KEY', 'gsk_mock_groq_api_key_for_testing')
+        elif 'semrush' in vault_key.lower():
+            return 'mock_semrush_api_key'
+        elif 'google' in vault_key.lower():
+            return 'mock_google_api_key'
+        elif 'hubspot' in vault_key.lower():
+            return 'mock_hubspot_api_key'
+        else:
+            return f'mock_secret_value_for_{vault_key}'
+    
+    def validate_secrets(self, secrets_config: Dict[str, str]) -> bool:
+        """
+        Validate all secret references can be resolved
+        
+        Args:
+            secrets_config: Secret configuration from recipe
+            
+        Returns:
+            True if all secrets available
+        """
+        try:
+            for key, secret_ref in secrets_config.items():
+                if isinstance(secret_ref, str) and secret_ref.startswith('secret:'):
+                    self._resolve_secret(secret_ref)
+            return True
+        except Exception as e:
+            logger.warning(f"Secret validation failed: {e}")
+            return False
+

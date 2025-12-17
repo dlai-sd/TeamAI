@@ -5,9 +5,11 @@ Executes YAML-defined recipes using LangGraph with mandatory subscription tracki
 import yaml
 import asyncio
 import sys
-from typing import Dict, Any, List, Optional
+import re
+from typing import Dict, Any, List, Optional, Set
 from pathlib import Path
 from datetime import datetime
+from jinja2 import Template, TemplateError
 
 # Add backend to path for imports
 backend_path = Path(__file__).parent.parent
@@ -19,6 +21,7 @@ from components.processors.web_crawler import WebCrawler
 from components.processors.llm_processor import LLMProcessor
 from components.processors.report_generator import ReportGenerator
 from components.subscription_tracker import SubscriptionTracker
+from app.utils.secrets import SecretInjector
 
 
 class RecipeEvaluator:
@@ -97,8 +100,7 @@ class RecipeEvaluator:
             config=tracker_config, 
             mock_mode=self.mock_mode,
             db_session=self.db_session
-        ) or not self.recipe_path.exists():
-            raise FileNotFoundError(f"Recipe file not found: {self.recipe_path}")
+        )
     
     def _load_recipe(self) -> Dict[str, Any]:
         """Load and parse YAML recipe"""
@@ -141,7 +143,7 @@ class RecipeEvaluator:
     
     async def execute(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute recipe with given inputs
+        Execute recipe with given inputs (DAG workflow execution)
         
         Args:
             inputs: Input parameters defined in recipe
@@ -160,16 +162,57 @@ class RecipeEvaluator:
         print(f"Version: {self.recipe.get('version', '1.0.0')}")
         print(f"Mock Mode: {self.mock_mode}\n")
         
-        # Execute workflow as DAG
-        workflow = self.recipe['workflow']
-        nodes = {node['id']: node for node in workflow['nodes']}
-        
-        # Build execution order from edges
-        execution_order = self._build_execution_order(nodes, workflow['edges'])
-        
-        # Execute nodes in order
-        for node_id in execution_order:
-            await self._execute_node(nodes[node_id])
+        try:
+            # Execute workflow as DAG
+            workflow = self.recipe['workflow']
+            nodes = {node['id']: node for node in workflow['nodes']}
+            
+            # Build execution order from edges
+            execution_order = self._build_execution_order(nodes, workflow['edges'])
+            print(f"Execution order: {' → '.join(execution_order)}\n")
+            
+            # Execute nodes in order
+            for node_id in execution_order:
+                try:
+                    await self._execute_node(nodes[node_id])
+                except Exception as e:
+                    # Check if node allows failure
+                    allow_failure = nodes[node_id].get('allow_failure', False)
+                    if allow_failure:
+                        print(f"⚠️  Node {node_id} failed (allowed): {e}")
+                        self.execution_state[f"{node_id}.error"] = str(e)
+                        self.execution_state[f"{node_id}.status"] = 'failed'
+                    else:
+                        print(f"❌ Node {node_id} failed (critical): {e}")
+                        raise
+            
+            execution_status = 'success'
+            
+        except Exception as e:
+            execution_status = 'failed'
+            print(f"\n❌ Recipe execution failed: {e}")
+            
+            # Calculate metrics even on failure
+            self.metrics['end_time'] = datetime.utcnow()
+            self.metrics['execution_time_ms'] = int(
+                (self.metrics['end_time'] - self.metrics['start_time']).total_seconds() * 1000
+            )
+            
+            # Track failure
+            if self.subscription_tracker:
+                try:
+                    await self.subscription_tracker.execute({
+                        'execution_time_ms': self.metrics['execution_time_ms'],
+                        'tokens_used': self.metrics['tokens_used'],
+                        'cost_incurred': self.metrics['total_cost'],
+                        'status': execution_status,
+                        'metadata': {'error': str(e)}
+                    })
+                except:
+                    pass
+            
+            # Re-raise the exception
+            raise
         
         # Calculate final metrics
         self.metrics['end_time'] = datetime.utcnow()
@@ -178,7 +221,6 @@ class RecipeEvaluator:
         )
         
         # MANDATORY: Track execution for billing (compliance layer)
-        execution_status = 'success'
         tracking_result = None
         if self.subscription_tracker:
             try:
@@ -192,15 +234,17 @@ class RecipeEvaluator:
                         'recipe_version': self.recipe.get('version', '1.0.0')
                     }
                 })
-                print(f"✅ Subscription tracked: {tracking_result.get('billable_units', 0)} units")
+                print(f"\n✅ Subscription tracked: {tracking_result.get('billable_units', 0)} units")
             except Exception as e:
                 print(f"⚠️  Subscription tracking failed: {e}")
                 # Continue execution but log the failure
         
         # Get output from workflow
-        output_node = workflow.get('output', {})
-        output_source = output_node.get('source', 'final_node.output')
+        output_config = workflow.get('output', {})
+        output_source = output_config.get('source', 'final_node.output')
         final_output = self._resolve_output(output_source)
+        
+        print(f"\n✅ Recipe execution complete in {self.metrics['execution_time_ms']}ms")
         
         return {
             'success': True,
@@ -242,139 +286,236 @@ class RecipeEvaluator:
         return order
     
     async def _execute_node(self, node: Dict[str, Any]):
-        """Execute a single workflow node"""
+        """
+        Execute a single workflow node with secret injection and parameter interpolation
+        
+        Args:
+            node: Node configuration from workflow
+        """
         node_id = node['id']
         component_name = node['component']
         config = node.get('config', {})
+        secrets = node.get('secrets', {})
         
         print(f"📦 Executing Node: {node_id} ({component_name})")
         
-        # Replace template variables in config
-        resolved_config = self._resolve_config(config)
-        
-        # Instantiate component
-        component_class = self.COMPONENTS[component_name]
-        component = component_class(config=resolved_config, mock_mode=self.mock_mode)
-        
-        # Get inputs from depends_on nodes
-        depends_on = node.get('depends_on', [])
-        node_inputs = {}
-        for dep in depends_on:
-            if f"{dep}.output" in self.execution_state:
-                node_inputs[dep] = self.execution_state[f"{dep}.output"]
-        
-        # Execute component
         try:
-            # Determine what to pass to component
-            if component_name == 'WebCrawler':
-                # WebCrawler needs URL and max_depth
-                url = self.execution_state['inputs'].get('website_url')
-                max_depth = self.execution_state['inputs'].get('max_depth', 2)
-                result = await component.execute(url, max_depth)
+            # Step 1: Inject secrets from Azure Key Vault
+            if secrets and self.tracking_config:
+                agency_id = self.tracking_config.get('agency_id')
+                team_id = self.tracking_config.get('team_id')
+                if agency_id:
+                    secret_injector = SecretInjector(agency_id, team_id)
+                    secrets = secret_injector.inject_secrets(secrets)
+                    print(f"  🔐 Secrets injected: {list(secrets.keys())}")
             
-            elif component_name == 'LLMProcessor':
-                # LLMProcessor needs prompt (may include data from previous nodes)
-                prompt_template = node.get('config', {}).get('prompt_template', '')
-                prompt = self._build_prompt(prompt_template, node_inputs)
-                result = await component.execute(prompt)
-                
-                # Track LLM metrics
-                self.metrics['total_cost'] += result.get('cost', 0)
-                self.metrics['tokens_used'] += result.get('usage', {}).get('total_tokens', 0)
+            # Step 2: Interpolate config parameters with Jinja2
+            resolved_config = self._interpolate_config(config)
             
-            elif component_name == 'ReportGenerator':
-                # ReportGenerator needs data from analysis
-                report_data = self._build_report_data(node_inputs)
-                title = config.get('title', 'Agent Report')
-                result = await component.execute(report_data, title)
+            # Merge secrets into config
+            resolved_config.update(secrets)
             
-            else:
-                # Generic execution
-                result = await component.execute(**node_inputs)
+            # Step 3: Instantiate component
+            component_class = self.COMPONENTS[component_name]
+            component = component_class(config=resolved_config, mock_mode=self.mock_mode)
             
-            # Store result in execution state
+            # Step 4: Get inputs from depends_on nodes
+            depends_on = node.get('depends_on', [])
+            node_inputs = {}
+            for dep in depends_on:
+                if f"{dep}.output" in self.execution_state:
+                    node_inputs[dep] = self.execution_state[f"{dep}.output"]
+            
+            # Step 5: Execute component based on type
+            result = await self._execute_component(
+                component, 
+                component_name, 
+                resolved_config, 
+                node_inputs
+            )
+            
+            # Step 6: Store result in execution state
             self.execution_state[f"{node_id}.output"] = result
+            self.execution_state[f"{node_id}.status"] = 'success'
             self.metrics['nodes_executed'] += 1
             
-            print(f"✅ Node {node_id} completed\n")
+            # Track LLM costs
+            if isinstance(result, dict):
+                if 'cost' in result:
+                    self.metrics['total_cost'] += result.get('cost', 0)
+                if 'usage' in result:
+                    self.metrics['tokens_used'] += result.get('usage', {}).get('total_tokens', 0)
+            
+            print(f"  ✅ Node {node_id} completed\n")
             
         except Exception as e:
-            print(f"❌ Node {node_id} failed: {str(e)}\n")
+            print(f"  ❌ Node {node_id} failed: {str(e)}\n")
+            self.execution_state[f"{node_id}.status"] = 'failed'
+            self.execution_state[f"{node_id}.error"] = str(e)
             raise
     
-    def _resolve_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
-        """Resolve template variables in config"""
+    async def _execute_component(
+        self, 
+        component, 
+        component_name: str, 
+        config: Dict[str, Any],
+        node_inputs: Dict[str, Any]
+    ) -> Any:
+        """
+        Execute component based on its type
+        
+        Args:
+            component: Component instance
+            component_name: Component class name
+            config: Resolved configuration
+            node_inputs: Outputs from dependent nodes
+            
+        Returns:
+            Component execution result
+        """
+        if component_name == 'WebCrawler':
+            # WebCrawler needs URL and max_depth
+            url = self.execution_state['inputs'].get('website_url')
+            max_depth = config.get('max_depth') or self.execution_state['inputs'].get('max_depth', 2)
+            max_pages = config.get('max_pages', 50)
+            return await component.execute(url, max_depth, max_pages)
+        
+        elif component_name == 'LLMProcessor':
+            # LLMProcessor needs prompt (may include data from previous nodes)
+            prompt_template = config.get('prompt_template', '')
+            prompt = self._build_prompt(prompt_template, node_inputs)
+            
+            model = config.get('model', 'groq-llama-3.1-8b-instant')
+            temperature = config.get('temperature', 0.2)
+            
+            return await component.execute(
+                prompt=prompt,
+                model=model,
+                temperature=temperature
+            )
+        
+        elif component_name == 'ReportGenerator':
+            # ReportGenerator needs data from analysis
+            report_data = self._build_report_data(node_inputs)
+            title = config.get('title', 'Agent Report')
+            format_type = config.get('format', 'markdown')
+            
+            return await component.execute(
+                data=report_data,
+                title=title,
+                format=format_type
+            )
+        
+        elif component_name == 'SubscriptionTracker':
+            # Subscription tracking (mandatory compliance)
+            return await component.execute(node_inputs)
+        
+        else:
+            # Generic execution - pass all node_inputs
+            return await component.execute(**node_inputs)
+    
+    def _interpolate_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Interpolate config parameters using Jinja2 templates
+        
+        Supports:
+        - {{ inputs.website_url }}
+        - {{ inputs.max_depth * 20 }}
+        - {{ fetch_pages.output.total_pages }}
+        
+        Args:
+            config: Configuration dict with template strings
+            
+        Returns:
+            Resolved configuration
+        """
         resolved = {}
+        
+        # Build template context
+        context = {
+            'inputs': self.execution_state.get('inputs', {}),
+            'config': self.config if hasattr(self, 'config') else {}
+        }
+        
+        # Add node outputs to context
+        for key, value in self.execution_state.items():
+            if '.output' in key:
+                node_name = key.replace('.output', '')
+                context[node_name] = {'output': value}
+        
         for key, value in config.items():
-            if isinstance(value, str) and '{{' in value:
-                # Template variable like {{ inputs.website_url }}
-                resolved[key] = self._resolve_template(value)
+            if isinstance(value, str) and '{{' in value and '}}' in value:
+                try:
+                    # Render with Jinja2
+                    template = Template(value)
+                    rendered = template.render(**context)
+                    
+                    # Try to convert to appropriate type
+                    resolved[key] = self._cast_value(rendered)
+                    
+                except TemplateError as e:
+                    print(f"  ⚠️  Template error in {key}: {e}")
+                    resolved[key] = value
+            elif isinstance(value, dict):
+                # Recursively interpolate nested dicts
+                resolved[key] = self._interpolate_config(value)
             else:
                 resolved[key] = value
+        
         return resolved
     
-    def _resolve_template(self, template: str) -> Any:
-        """Resolve template variable"""
-        # Simple template resolution
-        import re
-        pattern = r'\{\{\s*([^}]+)\s*\}\}'
-        matches = re.findall(pattern, template)
+    def _cast_value(self, value: str) -> Any:
+        """Cast string value to appropriate type"""
+        # Try integer
+        if value.isdigit() or (value.startswith('-') and value[1:].isdigit()):
+            return int(value)
         
-        result = template
-        for match in matches:
-            parts = match.strip().split('.')
-            value = self.execution_state
-            for part in parts:
-                value = value.get(part, '')
-            result = result.replace(f'{{{{ {match} }}}}', str(value))
-        
-        # Try to convert to appropriate type
-        if result.isdigit():
-            return int(result)
+        # Try float
         try:
-            return float(result)
+            return float(value)
         except ValueError:
             pass
-        if result.lower() in ('true', 'false'):
-            return result.lower() == 'true'
         
-        return result
+        # Try boolean
+        if value.lower() in ('true', 'false'):
+            return value.lower() == 'true'
+        
+        # Return as string
+        return value
     
     def _build_prompt(self, template: str, node_inputs: Dict) -> str:
-        """Build LLM prompt from template and inputs"""
-        # Replace {node.output} placeholders
-        prompt = template
-        for node_id, data in node_inputs.items():
-            placeholder = f'{{{node_id}.output}}'
-            if placeholder in prompt:
-                # Convert data to string representation
-                if isinstance(data, dict):
-                    import json
-                    data_str = json.dumps(data, indent=2)
-                else:
-                    data_str = str(data)
-                prompt = prompt.replace(placeholder, data_str)
+        """
+        Build LLM prompt from template and node inputs
         
-        return prompt
+        Args:
+            template: Prompt template with placeholders
+            node_inputs: Outputs from dependent nodes
+            
+        Returns:
+            Rendered prompt
+        """
+        # Build context
+        context = {
+            'inputs': self.execution_state.get('inputs', {})
+        }
+        context.update(node_inputs)
+        
+        try:
+            # Render with Jinja2
+            jinja_template = Template(template)
+            return jinja_template.render(**context)
+        except TemplateError as e:
+            print(f"  ⚠️  Prompt template error: {e}")
+            return template
     
     def _build_report_data(self, node_inputs: Dict) -> Dict[str, Any]:
-        """Build report data from analysis results"""
+        """Build report data from node outputs"""
         report_data = {}
-        
-        for node_id, data in node_inputs.items():
-            if isinstance(data, dict):
-                # Extract LLM analysis content
-                if 'content' in data:
-                    report_data['analysis'] = data['content']
-                    report_data['model_used'] = data.get('model', 'unknown')
-                
-                # Extract crawler data
-                if 'pages' in data:
-                    report_data['pages_analyzed'] = data.get('total_pages', 0)
-                    report_data['detailed_data'] = {
-                        'pages': data['pages'][:3]  # Include first 3 pages
-                    }
-        
+        for node_id, output in node_inputs.items():
+            if isinstance(output, dict):
+                report_data.update(output)
+            else:
+                report_data[node_id] = output
         return report_data
     
     def _resolve_output(self, output_source: str) -> Any:
@@ -388,3 +529,4 @@ class RecipeEvaluator:
                 return self.execution_state[key]
         
         return self.execution_state
+

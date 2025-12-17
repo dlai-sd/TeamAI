@@ -46,8 +46,12 @@ class UUID(TypeDecorator):
                 return value
 
 
-# Test database URL (in-memory SQLite for fast tests)
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+# Test database URL (file-based SQLite for tests)
+import tempfile
+import os
+
+TEST_DB_FILE = tempfile.mktemp(suffix=".db")
+TEST_DATABASE_URL = f"sqlite+aiosqlite:///{TEST_DB_FILE}"
 
 
 @pytest.fixture(scope="session")
@@ -58,29 +62,35 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 async def db_engine():
-    """Create test database engine"""
+    """Create test database engine (session-scoped)"""
     engine = create_async_engine(
         TEST_DATABASE_URL,
         poolclass=NullPool,
         echo=False
     )
     
+    # Create all tables once for the session
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     
     yield engine
     
+    # Cleanup
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     
     await engine.dispose()
+    
+    # Remove test database file
+    if os.path.exists(TEST_DB_FILE):
+        os.remove(TEST_DB_FILE)
 
 
 @pytest.fixture
 async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
-    """Create test database session"""
+    """Create test database session with automatic cleanup"""
     async_session = async_sessionmaker(
         db_engine,
         class_=AsyncSession,
@@ -89,6 +99,8 @@ async def db_session(db_engine) -> AsyncGenerator[AsyncSession, None]:
     
     async with async_session() as session:
         yield session
+        # Close session to release connection
+        await session.close()
 
 
 @pytest.fixture

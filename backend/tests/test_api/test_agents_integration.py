@@ -14,8 +14,8 @@ from app.utils.security import hash_password
 
 
 @pytest.fixture
-async def test_agency(db_session: AsyncSession):
-    """Create test agency"""
+async def test_agency(db_session: AsyncSession, db_engine):
+    """Create test agency (depends on db_engine to ensure tables exist)"""
     agency = Agency(
         id=uuid4(),
         name="Test Agency",

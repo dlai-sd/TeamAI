@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamAI - Tech Company Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #fafafa;
+            --bg-card: #ffffff;
+            --border: #e5e5e5;
+            --text: #171717;
+            --text-muted: #737373;
+            --accent: #0066ff;
+            --accent-light: #e6f0ff;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Header - Minimal */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--accent);
+            border-radius: 6px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 4px;
+        }
+
+        .header-nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.15s;
+        }
+
+        .header-nav a:hover {
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .header-nav a.active {
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .cmd-k {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .cmd-k kbd {
+            background: var(--bg-card);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        /* Main Layout */
+        .main {
+            margin-top: 56px;
+            display: flex;
+            min-height: calc(100vh - 56px);
+        }
+
+        /* Sidebar - Minimal */
+        .sidebar {
+            width: 240px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 16px 12px;
+            position: fixed;
+            top: 56px;
+            bottom: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 8px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s;
+            color: var(--text-muted);
+        }
+
+        .sidebar-item:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .sidebar-item.active {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .sidebar-item-icon {
+            width: 16px;
+            text-align: center;
+        }
+
+        .team-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: auto;
+        }
+
+        .team-indicator.active { background: var(--success); }
+        .team-indicator.idle { background: var(--border); }
+
+        /* Content */
+        .content {
+            margin-left: 240px;
+            flex: 1;
+            padding: 24px;
+            max-width: 1200px;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            color: var(--success);
+            margin-top: 4px;
+        }
+
+        /* Agent Card - Blueprint View */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .card-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.idle {
+            background: var(--bg);
+            color: var(--text-muted);
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        /* Blueprint Diagram */
+        .blueprint {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+
+        .blueprint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .blueprint-title {
+            font-weight: 500;
+        }
+
+        .blueprint-version {
+            color: var(--text-muted);
+        }
+
+        .blueprint-flow {
+            display: flex;
+            align-items: stretch;
+            gap: 8px;
+        }
+
+        .blueprint-node {
+            flex: 1;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 12px;
+            background: var(--bg-card);
+            text-align: center;
+        }
+
+        .blueprint-node-name {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        .blueprint-node-type {
+            color: var(--text-muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .blueprint-node-io {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border);
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .blueprint-arrow {
+            display: flex;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+
+        .blueprint-meta {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border);
+            display: flex;
+            gap: 24px;
+        }
+
+        .blueprint-meta-item {
+            color: var(--text-muted);
+        }
+
+        .blueprint-meta-item strong {
+            color: var(--text);
+        }
+
+        /* Input Section */
+        .input-section {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0052cc;
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            border-color: var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg);
+        }
+
+        /* Terminal Output */
+        .terminal {
+            background: #1e1e1e;
+            border-radius: 6px;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+
+        .terminal-header {
+            background: #2d2d2d;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #ff5f56; }
+        .terminal-dot.yellow { background: #ffbd2e; }
+        .terminal-dot.green { background: #27c93f; }
+
+        .terminal-title {
+            color: #888;
+            margin-left: 8px;
+        }
+
+        .terminal-body {
+            padding: 16px;
+            color: #d4d4d4;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .terminal-line {
+            margin-bottom: 4px;
+        }
+
+        .terminal-line .success { color: #4ec9b0; }
+        .terminal-line .info { color: #569cd6; }
+        .terminal-line .warn { color: #dcdcaa; }
+        .terminal-line .muted { color: #6a9955; }
+
+        /* Differentiators - Table Style */
+        .diff-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .diff-table th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 500;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .diff-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .diff-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .diff-feature {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .diff-desc {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .diff-preview {
+            background: var(--bg);
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        /* Cost Comparison */
+        .cost-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .cost-box {
+            padding: 16px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .cost-box.human {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .cost-box.ai {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+        }
+
+        .cost-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .cost-value {
+            font-size: 28px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cost-box.human .cost-value { color: #dc2626; }
+        .cost-box.ai .cost-value { color: #16a34a; }
+
+        .cost-detail {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Benchmark Bar */
+        .benchmark {
+            margin-top: 8px;
+        }
+
+        .benchmark-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .benchmark-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        .benchmark-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Export Buttons */
+        .export-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .export-btn:hover {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        /* White Label */
+        .whitelabel-preview {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .whitelabel-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 6px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--border);
+        }
+
+        .modal h3 {
+            margin-bottom: 16px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon"></div>
+            TeamAI
+        </div>
+        <nav class="header-nav">
+            <a href="#" class="active">Dashboard</a>
+            <a href="#">Agents</a>
+            <a href="#">Logs</a>
+            <a href="#">Settings</a>
+        </nav>
+        <div class="header-right">
+            <div class="cmd-k">
+                Search <kbd>⌘K</kbd>
+            </div>
+            <div class="avatar">YK</div>
+        </div>
+    </header>
+
+    <div class="main">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-label">Teams</div>
+                <div class="sidebar-item active">
+                    <span class="sidebar-item-icon">📁</span>
+                    SEO Squad
+                    <span class="team-indicator active"></span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="sidebar-item-icon">📁</span>
+                    Content Crew
+                    <span class="team-indicator idle"></span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="sidebar-item-icon">📁</span>
+                    Lead Gen
+                    <span class="team-indicator idle"></span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Agents</div>
+                <div class="sidebar-item">
+                    <span class="sidebar-item-icon">🔍</span>
+                    Rover
+                    <span class="team-indicator active"></span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="sidebar-item-icon">✍️</span>
+                    Wordsmith
+                    <span class="team-indicator idle"></span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="sidebar-item-icon">🎯</span>
+                    Hunter
+                    <span class="team-indicator idle"></span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">Quick Links</div>
+                <div class="sidebar-item">
+                    <span class="sidebar-item-icon">📊</span>
+                    Usage
+                </div>
+                <div class="sidebar-item">
+                    <span class="sidebar-item-icon">📖</span>
+                    Docs
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content -->
+        <main class="content">
+            <div class="page-header">
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">Yashus Agency · 4 agents active</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">Executions</div>
+                    <div class="stat-value">127</div>
+                    <div class="stat-change">+34% this month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Tokens Used</div>
+                    <div class="stat-value">108.4k</div>
+                    <div class="stat-change">Avg 854/run</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Cost</div>
+                    <div class="stat-value">$8.89</div>
+                    <div class="stat-change">$0.07 avg/run</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Hours Saved</div>
+                    <div class="stat-value">508h</div>
+                    <div class="stat-change">≈ $12,700</div>
+                </div>
+            </div>
+
+            <!-- Run Audit -->
+            <div class="input-section">
+                <input type="text" class="input-field" placeholder="Enter URL to audit..." value="https://yashus.in">
+                <button class="btn btn-primary" onclick="runAudit()">Run Audit</button>
+            </div>
+
+            <!-- Agent Blueprint -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        🔍 Rover
+                        <span class="status-badge active">Active</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary" onclick="showRenameModal()">Rename</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="blueprint">
+                        <div class="blueprint-header">
+                            <span class="blueprint-title">SEO_SPECIALIST_AGENT</span>
+                            <span class="blueprint-version">v1.0.0 · site-audit.yaml</span>
+                        </div>
+                        <div class="blueprint-flow">
+                            <div class="blueprint-node">
+                                <div class="blueprint-node-name">WebCrawler</div>
+                                <div class="blueprint-node-type">Processor</div>
+                                <div class="blueprint-node-io">
+                                    in: URL<br>
+                                    out: pages[], links[]
+                                </div>
+                            </div>
+                            <div class="blueprint-arrow">→</div>
+                            <div class="blueprint-node">
+                                <div class="blueprint-node-name">LLMProcessor</div>
+                                <div class="blueprint-node-type">Processor</div>
+                                <div class="blueprint-node-io">
+                                    in: pages[]<br>
+                                    out: analysis{}
+                                </div>
+                            </div>
+                            <div class="blueprint-arrow">→</div>
+                            <div class="blueprint-node">
+                                <div class="blueprint-node-name">ReportGenerator</div>
+                                <div class="blueprint-node-type">Processor</div>
+                                <div class="blueprint-node-io">
+                                    in: analysis{}<br>
+                                    out: markdown
+                                </div>
+                            </div>
+                            <div class="blueprint-arrow">→</div>
+                            <div class="blueprint-node">
+                                <div class="blueprint-node-name">Tracker</div>
+                                <div class="blueprint-node-type">Compliance</div>
+                                <div class="blueprint-node-io">
+                                    in: metrics{}<br>
+                                    out: audit_log
+                                </div>
+                            </div>
+                        </div>
+                        <div class="blueprint-meta">
+                            <div class="blueprint-meta-item">
+                                <strong>Model:</strong> llama-3.1-8b-instant
+                            </div>
+                            <div class="blueprint-meta-item">
+                                <strong>Fallback:</strong> llama-3.3-70b-versatile
+                            </div>
+                            <div class="blueprint-meta-item">
+                                <strong>Owned by:</strong> SEO Squad
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal Output -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Execution Log</div>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div class="terminal">
+                        <div class="terminal-header">
+                            <div class="terminal-dot red"></div>
+                            <div class="terminal-dot yellow"></div>
+                            <div class="terminal-dot green"></div>
+                            <span class="terminal-title">site-audit · yashus.in</span>
+                        </div>
+                        <div class="terminal-body">
+                            <div class="terminal-line"><span class="info">[12:15:23]</span> Starting recipe: site-audit v1.0.0</div>
+                            <div class="terminal-line"><span class="info">[12:15:23]</span> Target: https://yashus.in</div>
+                            <div class="terminal-line"><span class="success">[12:15:24]</span> ✓ WebCrawler: Fetched 3 pages (450ms)</div>
+                            <div class="terminal-line"><span class="muted">[12:15:24]</span>   → words: 1247, links: 45, images: 8</div>
+                            <div class="terminal-line"><span class="success">[12:15:25]</span> ✓ LLMProcessor: Analysis complete (1.2s)</div>
+                            <div class="terminal-line"><span class="muted">[12:15:25]</span>   → model: llama-3.1-8b-instant, tokens: 824</div>
+                            <div class="terminal-line"><span class="success">[12:15:25]</span> ✓ ReportGenerator: Markdown generated</div>
+                            <div class="terminal-line"><span class="success">[12:15:25]</span> ✓ Tracker: Logged to audit_logs</div>
+                            <div class="terminal-line"><span class="info">[12:15:25]</span> Execution complete: 1,979ms | $0.000067</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Differentiators Table -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Features</div>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <table class="diff-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Description</th>
+                                <th style="width: 300px;">Preview</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="diff-feature">🏷️ White-Label</div>
+                                </td>
+                                <td>
+                                    <div class="diff-desc">Export reports with your agency branding</div>
+                                </td>
+                                <td>
+                                    <div class="diff-preview">
+                                        <div class="whitelabel-preview">
+                                            <div class="whitelabel-logo"></div>
+                                            <div>
+                                                <strong>Yashus Agency</strong><br>
+                                                <span style="color: var(--text-muted); font-size: 11px;">SEO Audit Report</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="diff-feature">📤 Export Tasks</div>
+                                </td>
+                                <td>
+                                    <div class="diff-desc">Send issues directly to project tools</div>
+                                </td>
+                                <td>
+                                    <div class="export-row">
+                                        <div class="export-btn">📋 Asana</div>
+                                        <div class="export-btn">📊 Monday</div>
+                                        <div class="export-btn">🎯 Trello</div>
+                                        <div class="export-btn">🔧 Jira</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="diff-feature">📈 Benchmarks</div>
+                                </td>
+                                <td>
+                                    <div class="diff-desc">Compare against industry standards</div>
+                                </td>
+                                <td>
+                                    <div class="diff-preview">
+                                        <div>Score: <strong>72</strong> / 100</div>
+                                        <div class="benchmark">
+                                            <div class="benchmark-bar">
+                                                <div class="benchmark-fill" style="width: 72%;"></div>
+                                            </div>
+                                            <div class="benchmark-labels">
+                                                <span>0</span>
+                                                <span>Better than 68% of sites</span>
+                                                <span>100</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="diff-feature">💰 Cost Savings</div>
+                                </td>
+                                <td>
+                                    <div class="diff-desc">Track ROI vs human work</div>
+                                </td>
+                                <td>
+                                    <div class="cost-comparison">
+                                        <div class="cost-box human">
+                                            <div class="cost-label">Human Cost</div>
+                                            <div class="cost-value">$12,700</div>
+                                            <div class="cost-detail">508h × $25/hr</div>
+                                        </div>
+                                        <div class="cost-box ai">
+                                            <div class="cost-label">AI Cost</div>
+                                            <div class="cost-value">$8.89</div>
+                                            <div class="cost-detail">1,428x savings</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Rename Modal -->
+    <div class="modal-overlay" id="renameModal">
+        <div class="modal">
+            <h3>Rename Agent</h3>
+            <input type="text" class="modal-input" placeholder="Agent name" value="Rover">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="hideRenameModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="hideRenameModal()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showRenameModal() {
+            document.getElementById('renameModal').classList.add('show');
+        }
+        function hideRenameModal() {
+            document.getElementById('renameModal').classList.remove('show');
+        }
+        function runAudit() {
+            alert('Running audit...');
+        }
+    </script>
+</body>
+</html>

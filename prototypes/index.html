@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamAI v0.2.0 Prototypes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            color: #94a3b8;
+            margin-bottom: 24px;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: rgba(96, 165, 250, 0.2);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 14px;
+            color: #60a5fa;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(96, 165, 250, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-preview {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            position: relative;
+        }
+
+        .card-preview.dark {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+        }
+
+        .card-preview.light {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+        }
+
+        .card-preview.enterprise {
+            background: linear-gradient(135deg, #f5f7fa, #e6f2ff);
+        }
+
+        .card-label {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            color: white;
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        .card-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .card-style {
+            font-size: 14px;
+            color: #60a5fa;
+            margin-bottom: 12px;
+        }
+
+        .card-desc {
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .feature-tag {
+            background: rgba(148, 163, 184, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+
+        .card-link {
+            display: block;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            text-decoration: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .card-link:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .differentiators {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 48px;
+        }
+
+        .differentiators h2 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .diff-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .diff-item {
+            background: rgba(148, 163, 184, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .diff-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .diff-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .diff-desc {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        footer {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        footer a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .agent-views {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .agent-view-tag {
+            background: rgba(167, 139, 250, 0.2);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #a78bfa;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TeamAI v0.2.0 Prototypes</h1>
+            <p class="subtitle">3 UI approaches for review • Pick your favorite direction</p>
+            <span class="version-badge">🚀 Planning Phase • December 2025</span>
+        </header>
+
+        <div class="grid">
+            <!-- Proto A -->
+            <div class="card">
+                <div class="card-preview dark">
+                    <span class="card-label">Dark Mode</span>
+                    🎨
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title">Proto A: Creative Agency</h3>
+                    <p class="card-style">Notion / Monday.com inspired</p>
+                    <div class="agent-views">
+                        <span class="agent-view-tag">🔄 Live Flow View</span>
+                    </div>
+                    <p class="card-desc">
+                        Bold, dark theme with vibrant gradients. Features animated "Live Flow" agent visualization 
+                        showing real-time node execution with pulse animations. Campaign HQ metaphor for teams.
+                    </p>
+                    <div class="features">
+                        <span class="feature-tag">Gradients</span>
+                        <span class="feature-tag">Animations</span>
+                        <span class="feature-tag">Bold Colors</span>
+                        <span class="feature-tag">Glass Effects</span>
+                    </div>
+                    <a href="proto-a-creative-agency.html" class="card-link">View Proto A →</a>
+                </div>
+            </div>
+
+            <!-- Proto B -->
+            <div class="card">
+                <div class="card-preview light">
+                    <span class="card-label">Light Mode</span>
+                    ⚡
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title">Proto B: Tech Company</h3>
+                    <p class="card-style">Linear / Vercel inspired</p>
+                    <div class="agent-views">
+                        <span class="agent-view-tag">📐 Blueprint View</span>
+                    </div>
+                    <p class="card-desc">
+                        Clean, minimal light theme with developer-focused UX. Features static "Blueprint" agent 
+                        visualization showing DAG architecture. Terminal-style execution logs and keyboard shortcuts.
+                    </p>
+                    <div class="features">
+                        <span class="feature-tag">Minimal</span>
+                        <span class="feature-tag">Terminal Output</span>
+                        <span class="feature-tag">Tables</span>
+                        <span class="feature-tag">Monospace</span>
+                    </div>
+                    <a href="proto-b-tech-company.html" class="card-link">View Proto B →</a>
+                </div>
+            </div>
+
+            <!-- Proto C -->
+            <div class="card">
+                <div class="card-preview enterprise">
+                    <span class="card-label">Enterprise</span>
+                    🏢
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title">Proto C: Service-as-Software</h3>
+                    <p class="card-style">GoDaddy / HubSpot inspired</p>
+                    <div class="agent-views">
+                        <span class="agent-view-tag">🔬 Anatomy View</span>
+                    </div>
+                    <p class="card-desc">
+                        Business-friendly enterprise style with wizard-based UX. Features expandable "Anatomy" 
+                        agent visualization with accordion sections. Upsell surfaces and help tooltips throughout.
+                    </p>
+                    <div class="features">
+                        <span class="feature-tag">Wizard Steps</span>
+                        <span class="feature-tag">Accordions</span>
+                        <span class="feature-tag">Upsells</span>
+                        <span class="feature-tag">Tooltips</span>
+                    </div>
+                    <a href="proto-c-service-software.html" class="card-link">View Proto C →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Differentiators -->
+        <div class="differentiators">
+            <h2>✨ 5 Key Differentiators (Mocked in All Prototypes)</h2>
+            <div class="diff-grid">
+                <div class="diff-item">
+                    <div class="diff-icon">💰</div>
+                    <div class="diff-title">Cost Savings</div>
+                    <div class="diff-desc">$12,700 human vs $8.89 AI<br>1,428x ROI calculator</div>
+                </div>
+                <div class="diff-item">
+                    <div class="diff-icon">📈</div>
+                    <div class="diff-title">Benchmarks</div>
+                    <div class="diff-desc">Score 72/100<br>"Better than 68% of sites"</div>
+                </div>
+                <div class="diff-item">
+                    <div class="diff-icon">📤</div>
+                    <div class="diff-title">Task Export</div>
+                    <div class="diff-desc">Asana, Monday,<br>Trello, Jira</div>
+                </div>
+                <div class="diff-item">
+                    <div class="diff-icon">🏷️</div>
+                    <div class="diff-title">White-Label</div>
+                    <div class="diff-desc">Agency branding<br>on all reports</div>
+                </div>
+                <div class="diff-item">
+                    <div class="diff-icon">🔍</div>
+                    <div class="diff-title">Transparency</div>
+                    <div class="diff-desc">Full execution<br>proof-of-work</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>TeamAI Prototypes • v0.2.0 Planning • <a href="https://github.com/dlai-sd/TeamAI">GitHub</a></p>
+            <p style="margin-top: 8px;">All prototypes include: Teams sidebar, Agent renaming, 5 differentiators</p>
+        </footer>
+    </div>
+</body>
+</html>

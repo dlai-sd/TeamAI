@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Needs → Marketing Roles Mapping</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #94a3b8;
+        }
+
+        .mapping-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            position: relative;
+            margin-bottom: 60px;
+        }
+
+        .column {
+            position: relative;
+        }
+
+        .column-header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding: 20px;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            border: 2px solid rgba(96, 165, 250, 0.3);
+        }
+
+        .column-header h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .column-header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateX(-4px);
+            border-color: rgba(96, 165, 250, 0.5);
+            box-shadow: 0 10px 30px rgba(96, 165, 250, 0.2);
+        }
+
+        .card.active {
+            border-color: #60a5fa;
+            background: rgba(96, 165, 250, 0.1);
+            transform: scale(1.02);
+        }
+
+        .card.connected {
+            border-color: #a78bfa;
+            background: rgba(167, 139, 250, 0.1);
+        }
+
+        .card-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .card-metric {
+            display: inline-block;
+            background: rgba(96, 165, 250, 0.2);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .role-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid rgba(167, 139, 250, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .role-card:hover {
+            transform: translateX(4px);
+            border-color: rgba(167, 139, 250, 0.5);
+            box-shadow: 0 10px 30px rgba(167, 139, 250, 0.2);
+        }
+
+        .role-card.active {
+            border-color: #a78bfa;
+            background: rgba(167, 139, 250, 0.1);
+            transform: scale(1.02);
+        }
+
+        .role-card.connected {
+            border-color: #60a5fa;
+            background: rgba(96, 165, 250, 0.1);
+        }
+
+        .role-badge {
+            display: inline-block;
+            background: rgba(167, 139, 250, 0.2);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            color: #a78bfa;
+            font-weight: 600;
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
+
+        .connections-viz {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .connection-line {
+            stroke: rgba(96, 165, 250, 0.3);
+            stroke-width: 2;
+            fill: none;
+            transition: all 0.3s ease;
+        }
+
+        .connection-line.active {
+            stroke: #60a5fa;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.8));
+        }
+
+        .matrix-table {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 16px;
+            padding: 32px;
+            overflow-x: auto;
+            margin-bottom: 60px;
+        }
+
+        .matrix-table h2 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        th {
+            background: rgba(96, 165, 250, 0.1);
+            font-weight: 700;
+            color: #60a5fa;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .match-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+
+        .match-primary { background: #22c55e; }
+        .match-secondary { background: #60a5fa; }
+        .match-tertiary { background: #94a3b8; }
+
+        .agent-suggestion {
+            background: rgba(167, 139, 250, 0.1);
+            border: 2px solid rgba(167, 139, 250, 0.3);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 40px;
+        }
+
+        .agent-suggestion h2 {
+            font-size: 24px;
+            margin-bottom: 24px;
+            color: #a78bfa;
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .agent-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid rgba(167, 139, 250, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .agent-card:hover {
+            border-color: #a78bfa;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(167, 139, 250, 0.3);
+        }
+
+        .agent-avatar {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #a78bfa, #60a5fa);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+
+        .agent-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .agent-role {
+            font-size: 12px;
+            color: #a78bfa;
+            margin-bottom: 12px;
+        }
+
+        .agent-solves {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .agent-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .skill-tag {
+            background: rgba(167, 139, 250, 0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            color: #a78bfa;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 40px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .instructions {
+            background: rgba(255, 152, 0, 0.1);
+            border: 2px solid rgba(255, 152, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .instructions p {
+            color: #ffa726;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Customer Needs → Marketing Roles Mapping</h1>
+            <p class="subtitle">Interactive visualization showing which marketing roles solve which customer needs</p>
+        </header>
+
+        <div class="instructions">
+            <p>👆 Click on any card to see relationships • Hover to explore connections</p>
+        </div>
+
+        <div class="mapping-container">
+            <svg class="connections-viz" id="connectionsSvg"></svg>
+
+            <!-- LEFT: Customer Business Needs -->
+            <div class="column">
+                <div class="column-header">
+                    <h2>🎯 Customer Business Needs</h2>
+                    <p>What customers actually want (in their language)</p>
+                </div>
+
+                <div class="card" data-need="visibility" onclick="highlightNeed('visibility')">
+                    <span class="card-icon">🔍</span>
+                    <div class="card-title">Nobody Can Find Us</div>
+                    <div class="card-desc">Low search rankings, no Google visibility, hidden from potential customers</div>
+                    <span class="card-metric">Metric: Search Impressions</span>
+                </div>
+
+                <div class="card" data-need="leads" onclick="highlightNeed('leads')">
+                    <span class="card-icon">📞</span>
+                    <div class="card-title">Not Enough Leads</div>
+                    <div class="card-desc">Phone isn't ringing, form submissions are low, need more inquiries</div>
+                    <span class="card-metric">Metric: Lead Volume</span>
+                </div>
+
+                <div class="card" data-need="conversion" onclick="highlightNeed('conversion')">
+                    <span class="card-icon">🛒</span>
+                    <div class="card-title">Traffic But No Sales</div>
+                    <div class="card-desc">People visit but don't buy, high bounce rate, cart abandonment</div>
+                    <span class="card-metric">Metric: Conversion Rate</span>
+                </div>
+
+                <div class="card" data-need="efficiency" onclick="highlightNeed('efficiency')">
+                    <span class="card-icon">💸</span>
+                    <div class="card-title">Wasting Ad Money</div>
+                    <div class="card-desc">High ad spend but poor ROI, not sure what's working, bleeding budget</div>
+                    <span class="card-metric">Metric: ROAS / CPL</span>
+                </div>
+
+                <div class="card" data-need="competition" onclick="highlightNeed('competition')">
+                    <span class="card-icon">⚔️</span>
+                    <div class="card-title">Losing to Competitors</div>
+                    <div class="card-desc">Competitors rank higher, have better ads, stealing our customers</div>
+                    <span class="card-metric">Metric: Market Share</span>
+                </div>
+
+                <div class="card" data-need="consistency" onclick="highlightNeed('consistency')">
+                    <span class="card-icon">📅</span>
+                    <div class="card-title">Can't Keep Up</div>
+                    <div class="card-desc">Inconsistent posting, outdated content, no time for social media</div>
+                    <span class="card-metric">Metric: Post Frequency</span>
+                </div>
+
+                <div class="card" data-need="trust" onclick="highlightNeed('trust')">
+                    <span class="card-icon">⭐</span>
+                    <div class="card-title">Bad Reputation Online</div>
+                    <div class="card-desc">Negative reviews, poor ratings, no testimonials, trust issues</div>
+                    <span class="card-metric">Metric: Review Rating</span>
+                </div>
+
+                <div class="card" data-need="clarity" onclick="highlightNeed('clarity')">
+                    <span class="card-icon">📊</span>
+                    <div class="card-title">Don't Know What's Working</div>
+                    <div class="card-desc">No clear metrics, can't track ROI, flying blind on marketing spend</div>
+                    <span class="card-metric">Metric: Attribution Clarity</span>
+                </div>
+            </div>
+
+            <!-- RIGHT: Marketing Roles -->
+            <div class="column">
+                <div class="column-header">
+                    <h2>🎭 Marketing Roles (Skills)</h2>
+                    <p>Traditional roles that solve these needs</p>
+                </div>
+
+                <div class="role-card" data-role="seo" data-solves="visibility,leads,competition" onclick="highlightRole('seo')">
+                    <span class="card-icon">🔍</span>
+                    <div class="card-title">SEO Specialist</div>
+                    <div class="card-desc">Improves search rankings through keyword research, on-page optimization, technical fixes, content strategy</div>
+                    <div>
+                        <span class="role-badge">Keyword Research</span>
+                        <span class="role-badge">Technical Audit</span>
+                        <span class="role-badge">Content Optimization</span>
+                        <span class="role-badge">Backlink Analysis</span>
+                    </div>
+                </div>
+
+                <div class="role-card" data-role="ppc" data-solves="leads,efficiency,competition" onclick="highlightRole('ppc')">
+                    <span class="card-icon">🎯</span>
+                    <div class="card-title">PPC / Ads Manager</div>
+                    <div class="card-desc">Manages Google Ads, Meta Ads, optimizes bids, A/B tests creatives, maximizes ROAS</div>
+                    <div>
+                        <span class="role-badge">Campaign Setup</span>
+                        <span class="role-badge">Bid Optimization</span>
+                        <span class="role-badge">A/B Testing</span>
+                        <span class="role-badge">Budget Allocation</span>
+                    </div>
+                </div>
+
+                <div class="role-card" data-role="cro" data-solves="conversion,efficiency" onclick="highlightRole('cro')">
+                    <span class="card-icon">🔄</span>
+                    <div class="card-title">CRO Specialist</div>
+                    <div class="card-desc">Conversion Rate Optimization through landing page testing, UX analysis, funnel optimization</div>
+                    <div>
+                        <span class="role-badge">Landing Page Design</span>
+                        <span class="role-badge">A/B Testing</span>
+                        <span class="role-badge">Funnel Analysis</span>
+                        <span class="role-badge">UX Research</span>
+                    </div>
+                </div>
+
+                <div class="role-card" data-role="content" data-solves="visibility,consistency,trust" onclick="highlightRole('content')">
+                    <span class="card-icon">✍️</span>
+                    <div class="card-title">Content Writer</div>
+                    <div class="card-desc">Creates blogs, social posts, email copy, website content optimized for SEO and engagement</div>
+                    <div>
+                        <span class="role-badge">Blog Writing</span>
+                        <span class="role-badge">Copywriting</span>
+                        <span class="role-badge">Social Content</span>
+                        <span class="role-badge">SEO Content</span>
+                    </div>
+                </div>
+
+                <div class="role-card" data-role="social" data-solves="consistency,trust,visibility" onclick="highlightRole('social')">
+                    <span class="card-icon">📱</span>
+                    <div class="card-title">Social Media Manager</div>
+                    <div class="card-desc">Schedules posts, engages with audience, grows followers, manages community</div>
+                    <div>
+                        <span class="role-badge">Content Calendar</span>
+                        <span class="role-badge">Community Mgmt</span>
+                        <span class="role-badge">Engagement</span>
+                        <span class="role-badge">Influencer Outreach</span>
+                    </div>
+                </div>
+
+                <div class="role-card" data-role="reputation" data-solves="trust,visibility" onclick="highlightRole('reputation')">
+                    <span class="card-icon">⭐</span>
+                    <div class="card-title">Reputation Manager</div>
+                    <div class="card-desc">Manages reviews, responds to feedback, handles negative comments, builds trust</div>
+                    <div>
+                        <span class="role-badge">Review Monitoring</span>
+                        <span class="role-badge">Response Writing</span>
+                        <span class="role-badge">Crisis Management</span>
+                        <span class="role-badge">GMB Optimization</span>
+                    </div>
+                </div>
+
+                <div class="role-card" data-role="analytics" data-solves="clarity,efficiency" onclick="highlightRole('analytics')">
+                    <span class="card-icon">📊</span>
+                    <div class="card-title">Analytics Expert</div>
+                    <div class="card-desc">Tracks metrics, builds dashboards, provides insights, measures ROI, attribution modeling</div>
+                    <div>
+                        <span class="role-badge">GA4 Setup</span>
+                        <span class="role-badge">Dashboard Building</span>
+                        <span class="role-badge">Attribution</span>
+                        <span class="role-badge">Reporting</span>
+                    </div>
+                </div>
+
+                <div class="role-card" data-role="competitor" data-solves="competition,clarity" onclick="highlightRole('competitor')">
+                    <span class="card-icon">🔭</span>
+                    <div class="card-title">Competitive Intelligence</div>
+                    <div class="card-desc">Monitors competitors, analyzes their strategies, identifies opportunities, market research</div>
+                    <div>
+                        <span class="role-badge">Competitor Tracking</span>
+                        <span class="role-badge">Market Analysis</span>
+                        <span class="role-badge">Pricing Intel</span>
+                        <span class="role-badge">Strategy Insights</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Relationship Matrix -->
+        <div class="matrix-table">
+            <h2>📋 Needs × Roles Match Matrix</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Customer Need</th>
+                        <th>Primary Role</th>
+                        <th>Secondary Role</th>
+                        <th>Supporting Role</th>
+                        <th>Agent Name Suggestion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🔍 Nobody Can Find Us</td>
+                        <td><span class="match-indicator match-primary"></span> SEO Specialist</td>
+                        <td><span class="match-indicator match-secondary"></span> Content Writer</td>
+                        <td><span class="match-indicator match-tertiary"></span> Social Media Manager</td>
+                        <td><strong>"SearchBot"</strong> / "Visibility Agent"</td>
+                    </tr>
+                    <tr>
+                        <td>📞 Not Enough Leads</td>
+                        <td><span class="match-indicator match-primary"></span> PPC Manager</td>
+                        <td><span class="match-indicator match-secondary"></span> SEO Specialist</td>
+                        <td><span class="match-indicator match-tertiary"></span> CRO Specialist</td>
+                        <td><strong>"LeadGen Pro"</strong> / "Inquiry Agent"</td>
+                    </tr>
+                    <tr>
+                        <td>🛒 Traffic But No Sales</td>
+                        <td><span class="match-indicator match-primary"></span> CRO Specialist</td>
+                        <td><span class="match-indicator match-secondary"></span> PPC Manager</td>
+                        <td><span class="match-indicator match-tertiary"></span> Content Writer</td>
+                        <td><strong>"Converter"</strong> / "Sales Optimizer"</td>
+                    </tr>
+                    <tr>
+                        <td>💸 Wasting Ad Money</td>
+                        <td><span class="match-indicator match-primary"></span> PPC Manager</td>
+                        <td><span class="match-indicator match-secondary"></span> Analytics Expert</td>
+                        <td><span class="match-indicator match-tertiary"></span> CRO Specialist</td>
+                        <td><strong>"BudgetGuard"</strong> / "ROI Agent"</td>
+                    </tr>
+                    <tr>
+                        <td>⚔️ Losing to Competitors</td>
+                        <td><span class="match-indicator match-primary"></span> Competitive Intelligence</td>
+                        <td><span class="match-indicator match-secondary"></span> SEO Specialist</td>
+                        <td><span class="match-indicator match-tertiary"></span> PPC Manager</td>
+                        <td><strong>"SpyBot"</strong> / "Competitor Tracker"</td>
+                    </tr>
+                    <tr>
+                        <td>📅 Can't Keep Up</td>
+                        <td><span class="match-indicator match-primary"></span> Social Media Manager</td>
+                        <td><span class="match-indicator match-secondary"></span> Content Writer</td>
+                        <td><span class="match-indicator match-tertiary"></span> -</td>
+                        <td><strong>"ContentBot"</strong> / "Scheduler Agent"</td>
+                    </tr>
+                    <tr>
+                        <td>⭐ Bad Reputation Online</td>
+                        <td><span class="match-indicator match-primary"></span> Reputation Manager</td>
+                        <td><span class="match-indicator match-secondary"></span> Social Media Manager</td>
+                        <td><span class="match-indicator match-tertiary"></span> Content Writer</td>
+                        <td><strong>"TrustBuilder"</strong> / "Review Agent"</td>
+                    </tr>
+                    <tr>
+                        <td>📊 Don't Know What's Working</td>
+                        <td><span class="match-indicator match-primary"></span> Analytics Expert</td>
+                        <td><span class="match-indicator match-secondary"></span> Competitive Intelligence</td>
+                        <td><span class="match-indicator match-tertiary"></span> -</td>
+                        <td><strong>"InsightBot"</strong> / "Analytics Agent"</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Agent Suggestions -->
+        <div class="agent-suggestion">
+            <h2>🤖 Suggested Agent Squad (Yashus AI Workforce)</h2>
+            <div class="agent-grid">
+                <div class="agent-card">
+                    <div class="agent-avatar">🔍</div>
+                    <div class="agent-name">SearchBot</div>
+                    <div class="agent-role">SEO Specialist Agent</div>
+                    <div class="agent-solves">Solves: Nobody Can Find Us</div>
+                    <div class="agent-skills">
+                        <span class="skill-tag">Site Audit</span>
+                        <span class="skill-tag">Keyword Research</span>
+                        <span class="skill-tag">Technical SEO</span>
+                        <span class="skill-tag">Content Gaps</span>
+                    </div>
+                </div>
+
+                <div class="agent-card">
+                    <div class="agent-avatar">🎯</div>
+                    <div class="agent-name">LeadGen Pro</div>
+                    <div class="agent-role">PPC Manager Agent</div>
+                    <div class="agent-solves">Solves: Not Enough Leads</div>
+                    <div class="agent-skills">
+                        <span class="skill-tag">Campaign Setup</span>
+                        <span class="skill-tag">Bid Optimization</span>
+                        <span class="skill-tag">Ad Creative</span>
+                        <span class="skill-tag">Budget Mgmt</span>
+                    </div>
+                </div>
+
+                <div class="agent-card">
+                    <div class="agent-avatar">🔄</div>
+                    <div class="agent-name">Converter</div>
+                    <div class="agent-role">CRO Specialist Agent</div>
+                    <div class="agent-solves">Solves: Traffic But No Sales</div>
+                    <div class="agent-skills">
+                        <span class="skill-tag">Landing Page Test</span>
+                        <span class="skill-tag">Funnel Analysis</span>
+                        <span class="skill-tag">CTA Optimization</span>
+                        <span class="skill-tag">Heat Maps</span>
+                    </div>
+                </div>
+
+                <div class="agent-card">
+                    <div class="agent-avatar">✍️</div>
+                    <div class="agent-name">ContentBot</div>
+                    <div class="agent-role">Content Writer Agent</div>
+                    <div class="agent-solves">Solves: Can't Keep Up</div>
+                    <div class="agent-skills">
+                        <span class="skill-tag">Blog Writing</span>
+                        <span class="skill-tag">Social Posts</span>
+                        <span class="skill-tag">Email Copy</span>
+                        <span class="skill-tag">SEO Content</span>
+                    </div>
+                </div>
+
+                <div class="agent-card">
+                    <div class="agent-avatar">📱</div>
+                    <div class="agent-name">PostMaster</div>
+                    <div class="agent-role">Social Media Manager Agent</div>
+                    <div class="agent-solves">Solves: Can't Keep Up</div>
+                    <div class="agent-skills">
+                        <span class="skill-tag">Scheduling</span>
+                        <span class="skill-tag">Auto-Reply</span>
+                        <span class="skill-tag">Hashtag Research</span>
+                        <span class="skill-tag">Engagement</span>
+                    </div>
+                </div>
+
+                <div class="agent-card">
+                    <div class="agent-avatar">⭐</div>
+                    <div class="agent-name">TrustBuilder</div>
+                    <div class="agent-role">Reputation Manager Agent</div>
+                    <div class="agent-solves">Solves: Bad Reputation Online</div>
+                    <div class="agent-skills">
+                        <span class="skill-tag">Review Monitor</span>
+                        <span class="skill-tag">Auto-Reply</span>
+                        <span class="skill-tag">Sentiment Analysis</span>
+                        <span class="skill-tag">GMB Optimize</span>
+                    </div>
+                </div>
+
+                <div class="agent-card">
+                    <div class="agent-avatar">📊</div>
+                    <div class="agent-name">InsightBot</div>
+                    <div class="agent-role">Analytics Expert Agent</div>
+                    <div class="agent-solves">Solves: Don't Know What's Working</div>
+                    <div class="agent-skills">
+                        <span class="skill-tag">Dashboard</span>
+                        <span class="skill-tag">ROI Tracking</span>
+                        <span class="skill-tag">Attribution</span>
+                        <span class="skill-tag">Reports</span>
+                    </div>
+                </div>
+
+                <div class="agent-card">
+                    <div class="agent-avatar">🔭</div>
+                    <div class="agent-name">SpyBot</div>
+                    <div class="agent-role">Competitive Intelligence Agent</div>
+                    <div class="agent-solves">Solves: Losing to Competitors</div>
+                    <div class="agent-skills">
+                        <span class="skill-tag">Competitor Track</span>
+                        <span class="skill-tag">Price Monitor</span>
+                        <span class="skill-tag">Keyword Gaps</span>
+                        <span class="skill-tag">Alerts</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="match-indicator match-primary"></span>
+                <span>Primary Match</span>
+            </div>
+            <div class="legend-item">
+                <span class="match-indicator match-secondary"></span>
+                <span>Secondary Support</span>
+            </div>
+            <div class="legend-item">
+                <span class="match-indicator match-tertiary"></span>
+                <span>Tertiary Support</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activeNeed = null;
+        let activeRole = null;
+
+        const needRoleMap = {
+            'visibility': ['seo', 'content', 'social'],
+            'leads': ['ppc', 'seo', 'cro'],
+            'conversion': ['cro', 'ppc', 'content'],
+            'efficiency': ['ppc', 'analytics', 'cro'],
+            'competition': ['competitor', 'seo', 'ppc'],
+            'consistency': ['social', 'content'],
+            'trust': ['reputation', 'social', 'content'],
+            'clarity': ['analytics', 'competitor']
+        };
+
+        function highlightNeed(needId) {
+            // Reset all
+            document.querySelectorAll('.card, .role-card').forEach(el => {
+                el.classList.remove('active', 'connected');
+            });
+
+            // Activate clicked need
+            const needCard = document.querySelector(`[data-need="${needId}"]`);
+            needCard.classList.add('active');
+            activeNeed = needId;
+
+            // Highlight related roles
+            const relatedRoles = needRoleMap[needId] || [];
+            relatedRoles.forEach(roleId => {
+                const roleCard = document.querySelector(`[data-role="${roleId}"]`);
+                if (roleCard) roleCard.classList.add('connected');
+            });
+
+            drawConnections();
+        }
+
+        function highlightRole(roleId) {
+            // Reset all
+            document.querySelectorAll('.card, .role-card').forEach(el => {
+                el.classList.remove('active', 'connected');
+            });
+
+            // Activate clicked role
+            const roleCard = document.querySelector(`[data-role="${roleId}"]`);
+            roleCard.classList.add('active');
+            activeRole = roleId;
+
+            // Highlight related needs
+            Object.keys(needRoleMap).forEach(needId => {
+                if (needRoleMap[needId].includes(roleId)) {
+                    const needCard = document.querySelector(`[data-need="${needId}"]`);
+                    if (needCard) needCard.classList.add('connected');
+                }
+            });
+
+            drawConnections();
+        }
+
+        function drawConnections() {
+            const svg = document.getElementById('connectionsSvg');
+            svg.innerHTML = '';
+
+            if (!activeNeed && !activeRole) return;
+
+            const container = document.querySelector('.mapping-container');
+            const svgRect = svg.getBoundingClientRect();
+
+            let connections = [];
+            if (activeNeed) {
+                const relatedRoles = needRoleMap[activeNeed] || [];
+                connections = relatedRoles.map(roleId => ({ needId: activeNeed, roleId }));
+            } else if (activeRole) {
+                Object.keys(needRoleMap).forEach(needId => {
+                    if (needRoleMap[needId].includes(activeRole)) {
+                        connections.push({ needId, roleId: activeRole });
+                    }
+                });
+            }
+
+            connections.forEach(({ needId, roleId }) => {
+                const needCard = document.querySelector(`[data-need="${needId}"]`);
+                const roleCard = document.querySelector(`[data-role="${roleId}"]`);
+                
+                if (needCard && roleCard) {
+                    const needRect = needCard.getBoundingClientRect();
+                    const roleRect = roleCard.getBoundingClientRect();
+
+                    const x1 = needRect.right - svgRect.left;
+                    const y1 = needRect.top + needRect.height / 2 - svgRect.top;
+                    const x2 = roleRect.left - svgRect.left;
+                    const y2 = roleRect.top + roleRect.height / 2 - svgRect.top;
+
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const midX = (x1 + x2) / 2;
+                    const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+                    path.setAttribute('d', d);
+                    path.setAttribute('class', 'connection-line active');
+                    svg.appendChild(path);
+                }
+            });
+        }
+
+        // Redraw on window resize
+        window.addEventListener('resize', drawConnections);
+    </script>
+</body>
+</html>

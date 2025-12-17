@@ -1,6 +1,6 @@
 """
 Recipe Evaluator
-Executes YAML-defined recipes using LangGraph
+Executes YAML-defined recipes using LangGraph with mandatory subscription tracking
 """
 import yaml
 import asyncio
@@ -18,6 +18,7 @@ if str(backend_path) not in sys.path:
 from components.processors.web_crawler import WebCrawler
 from components.processors.llm_processor import LLMProcessor
 from components.processors.report_generator import ReportGenerator
+from components.subscription_tracker import SubscriptionTracker
 
 
 class RecipeEvaluator:
@@ -30,19 +31,22 @@ class RecipeEvaluator:
     COMPONENTS = {
         'WebCrawler': WebCrawler,
         'LLMProcessor': LLMProcessor,
-        'ReportGenerator': ReportGenerator
+        'ReportGenerator': ReportGenerator,
+        'SubscriptionTracker': SubscriptionTracker
     }
     
-    def __init__(self, recipe_path: str, mock_mode: bool = False):
+    def __init__(self, recipe_path: str, mock_mode: bool = False, tracking_config: Optional[Dict[str, Any]] = None):
         """
         Initialize recipe evaluator
         
         Args:
             recipe_path: Path to YAML recipe file
             mock_mode: If True, use mock data instead of real API calls
+            tracking_config: Configuration for subscription tracking (agency_id, agent_instance_id)
         """
         self.recipe_path = Path(recipe_path)
         self.mock_mode = mock_mode
+        self.tracking_config = tracking_config or {}
         self.recipe = self._load_recipe()
         self.execution_state = {}
         self.metrics = {
@@ -53,6 +57,23 @@ class RecipeEvaluator:
             'tokens_used': 0,
             'nodes_executed': 0
         }
+        
+        # Initialize subscription tracker (mandatory for billing)
+        self.subscription_tracker = self._init_subscription_tracker()
+    
+    def _init_subscription_tracker(self) -> Optional[SubscriptionTracker]:
+        """Initialize subscription tracker with tracking configuration"""
+        if not self.tracking_config:
+            print("[RecipeEvaluator] No tracking config provided - skipping subscription tracker")
+            return None
+        
+        tracker_config = {
+            'agent_instance_id': self.tracking_config.get('agent_instance_id'),
+            'recipe_id': self.recipe.get('id') if hasattr(self, 'recipe') else None,
+            'agency_id': self.tracking_config.get('agency_id')
+        }
+        
+        return SubscriptionTracker(config=tracker_config, mock_mode=self.mock_mode)
     
     def _load_recipe(self) -> Dict[str, Any]:
         """Load and parse YAML recipe"""
@@ -131,6 +152,26 @@ class RecipeEvaluator:
             (self.metrics['end_time'] - self.metrics['start_time']).total_seconds() * 1000
         )
         
+        # MANDATORY: Track execution for billing (compliance layer)
+        execution_status = 'success'
+        tracking_result = None
+        if self.subscription_tracker:
+            try:
+                tracking_result = await self.subscription_tracker.execute({
+                    'execution_time_ms': self.metrics['execution_time_ms'],
+                    'tokens_used': self.metrics['tokens_used'],
+                    'cost_incurred': self.metrics['total_cost'],
+                    'status': execution_status,
+                    'metadata': {
+                        'nodes_executed': self.metrics['nodes_executed'],
+                        'recipe_version': self.recipe.get('version', '1.0.0')
+                    }
+                })
+                print(f"✅ Subscription tracked: {tracking_result.get('billable_units', 0)} units")
+            except Exception as e:
+                print(f"⚠️  Subscription tracking failed: {e}")
+                # Continue execution but log the failure
+        
         # Get output from workflow
         output_node = workflow.get('output', {})
         output_source = output_node.get('source', 'final_node.output')
@@ -141,6 +182,7 @@ class RecipeEvaluator:
             'recipe_id': self.recipe['id'],
             'output': final_output,
             'metrics': self.metrics,
+            'tracking': tracking_result,
             'execution_state': self.execution_state
         }
     

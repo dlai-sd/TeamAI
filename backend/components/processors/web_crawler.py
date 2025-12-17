@@ -1,8 +1,8 @@
 """
-WebCrawler Component
-Fetches and parses web pages
+WebCrawler Processor
+Orchestrates web crawling using WebsiteConnector and parses HTML
+Separation of concerns: WebsiteConnector (Data Source) → WebCrawler (Processor)
 """
-import httpx
 import sys
 from bs4 import BeautifulSoup
 from typing import Dict, List, Any, Optional
@@ -15,23 +15,31 @@ if str(backend_path) not in sys.path:
     sys.path.insert(0, str(backend_path))
 
 from components.base import BaseComponent
+from components.connectors.website_connector import WebsiteConnector
 
 
 class WebCrawler(BaseComponent):
-    """Crawls websites and extracts content"""
+    """Crawls websites and extracts SEO data (Processor layer)"""
     
     def __init__(self, config: Optional[Dict[str, Any]] = None, mock_mode: bool = False):
         super().__init__(config, mock_mode)
         self.max_pages = self.config.get('max_pages', 10)
         self.respect_robots = self.config.get('respect_robots', True)
-        self.timeout = self.config.get('timeout', 30)
-        self.user_agent = self.config.get('user_agent', 'TeamAI-Bot/1.0')
+        self.rate_limit_delay = self.config.get('rate_limit_delay', 0.5)
+        
+        # Initialize WebsiteConnector (Data Source)
+        connector_config = {
+            'timeout': self.config.get('timeout', 30),
+            'user_agent': self.config.get('user_agent', 'TeamAI-Bot/1.0'),
+            'follow_redirects': True
+        }
+        self.connector = WebsiteConnector(connector_config, mock_mode=mock_mode)
     
     def validate_config(self) -> bool:
         """Validate crawler configuration"""
         if self.max_pages < 1:
             return False
-        if self.timeout < 1:
+        if self.rate_limit_delay < 0:
             return False
         return True
     
@@ -56,56 +64,57 @@ class WebCrawler(BaseComponent):
         pages = []
         to_visit = [(url, 0)]  # (url, depth)
         
-        async with httpx.AsyncClient(
-            timeout=self.timeout,
-            headers={'User-Agent': self.user_agent},
-            follow_redirects=True
-        ) as client:
-            while to_visit and len(pages) < self.max_pages:
-                current_url, depth = to_visit.pop(0)
+        while to_visit and len(pages) < self.max_pages:
+            current_url, depth = to_visit.pop(0)
+            
+            if current_url in visited or depth > max_depth:
+                continue
+            
+            try:
+                # Use WebsiteConnector to fetch HTML (Data Source layer)
+                fetch_result = await self.connector.execute(current_url)
                 
-                if current_url in visited or depth > max_depth:
+                # Check for errors
+                if fetch_result.get('error') or not fetch_result.get('html'):
+                    print(f"Error fetching {current_url}: {fetch_result.get('error', 'No HTML')}")
                     continue
                 
-                try:
-                    response = await client.get(current_url)
-                    response.raise_for_status()
-                    
-                    visited.add(current_url)
-                    
-                    # Parse HTML
-                    soup = BeautifulSoup(response.text, 'lxml')
-                    
-                    # Extract page data
-                    page_data = {
-                        'url': current_url,
-                        'status_code': response.status_code,
-                        'title': soup.title.string if soup.title else '',
-                        'meta_description': self._extract_meta(soup, 'description'),
-                        'meta_keywords': self._extract_meta(soup, 'keywords'),
-                        'h1_tags': [h1.get_text(strip=True) for h1 in soup.find_all('h1')],
-                        'h2_tags': [h2.get_text(strip=True) for h2 in soup.find_all('h2')],
-                        'word_count': len(soup.get_text().split()),
-                        'links': self._extract_links(soup, current_url),
-                        'images': len(soup.find_all('img')),
-                        'depth': depth
-                    }
-                    
-                    pages.append(page_data)
-                    
-                    # Add internal links to queue (only if we haven't reached max depth)
-                    if depth < max_depth:
-                        base_domain = urlparse(current_url).netloc
-                        for link in page_data['links']:
-                            if urlparse(link).netloc == base_domain:
-                                to_visit.append((link, depth + 1))
-                    
-                    # Rate limiting
-                    await self._async_sleep(0.5)
+                visited.add(current_url)
                 
-                except Exception as e:
-                    print(f"Error crawling {current_url}: {str(e)}")
-                    continue
+                # Parse HTML (Processor layer responsibility)
+                soup = BeautifulSoup(fetch_result['html'], 'lxml')
+                
+                # Extract structured data
+                page_data = {
+                    'url': current_url,
+                    'status_code': fetch_result['status_code'],
+                    'title': soup.title.string if soup.title else '',
+                    'meta_description': self._extract_meta(soup, 'description'),
+                    'meta_keywords': self._extract_meta(soup, 'keywords'),
+                    'h1_tags': [h1.get_text(strip=True) for h1 in soup.find_all('h1')],
+                    'h2_tags': [h2.get_text(strip=True) for h2 in soup.find_all('h2')],
+                    'word_count': len(soup.get_text().split()),
+                    'links': self._extract_links(soup, current_url),
+                    'images': len(soup.find_all('img')),
+                    'depth': depth,
+                    'elapsed_ms': fetch_result.get('elapsed_ms', 0)
+                }
+                
+                pages.append(page_data)
+                
+                # Add internal links to queue (only if we haven't reached max depth)
+                if depth < max_depth:
+                    base_domain = urlparse(current_url).netloc
+                    for link in page_data['links']:
+                        if urlparse(link).netloc == base_domain:
+                            to_visit.append((link, depth + 1))
+                
+                # Rate limiting
+                await self._async_sleep(self.rate_limit_delay)
+            
+            except Exception as e:
+                print(f"Error processing {current_url}: {str(e)}")
+                continue
         
         return {
             'pages': pages,

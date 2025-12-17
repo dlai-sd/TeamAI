@@ -388,16 +388,15 @@ class RecipeEvaluator:
         
         elif component_name == 'LLMProcessor':
             # LLMProcessor needs prompt (may include data from previous nodes)
+            # Note: model and temperature are set via component config in __init__
             prompt_template = config.get('prompt_template', '')
             prompt = self._build_prompt(prompt_template, node_inputs)
             
-            model = config.get('model', 'groq-llama-3.1-8b-instant')
-            temperature = config.get('temperature', 0.2)
+            system_message = config.get('system_message')
             
             return await component.execute(
                 prompt=prompt,
-                model=model,
-                temperature=temperature
+                system_message=system_message
             )
         
         elif component_name == 'ReportGenerator':

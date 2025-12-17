@@ -46,7 +46,6 @@ RUN cd backend && pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY backend/ /app/backend/
-COPY shared/ /app/shared/
 COPY cookbooks/ /app/cookbooks/
 COPY recipes/ /app/recipes/
 

@@ -78,7 +78,7 @@ class Settings(BaseSettings):
         """Get the OAuth redirect URI (auto-construct if not explicitly set)"""
         if self.GOOGLE_REDIRECT_URI:
             return self.GOOGLE_REDIRECT_URI
-        return f"{self.effective_backend_url}/api/v1/auth/oauth2/callback"
+        return f"{self.effective_backend_url}/api/v1/auth/google/callback"
     
     class Config:
         env_file = ".env"

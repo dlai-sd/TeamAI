@@ -59,6 +59,17 @@ async def health_check():
     """Health check endpoint for monitoring"""
     return {"status": "healthy"}
 
+@app.get("/debug/config")
+async def debug_config():
+    """Debug endpoint to check OAuth configuration"""
+    return {
+        "BACKEND_URL": settings.BACKEND_URL,
+        "API_BASE_URL": settings.API_BASE_URL,
+        "effective_backend_url": settings.effective_backend_url,
+        "effective_redirect_uri": settings.effective_redirect_uri,
+        "GOOGLE_REDIRECT_URI": settings.GOOGLE_REDIRECT_URI,
+    }
+
 # Import routers (will be created later)
 # from app.api import admin, teams, agents, marketplace, tasks
 # app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])

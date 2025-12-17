@@ -383,8 +383,8 @@ class RecipeEvaluator:
             # WebCrawler needs URL and max_depth
             url = self.execution_state['inputs'].get('website_url')
             max_depth = config.get('max_depth') or self.execution_state['inputs'].get('max_depth', 2)
-            max_pages = config.get('max_pages', 50)
-            return await component.execute(url, max_depth, max_pages)
+            # Note: max_pages is set via component config, not execute()
+            return await component.execute(url, max_depth)
         
         elif component_name == 'LLMProcessor':
             # LLMProcessor needs prompt (may include data from previous nodes)

@@ -206,7 +206,8 @@ class SecretInjector:
     def __init__(
         self, 
         agency_id: UUID, 
-        team_id: Optional[UUID] = None
+        team_id: Optional[UUID] = None,
+        strict_mode: bool = True
     ):
         """
         Initialize secret injector
@@ -214,11 +215,14 @@ class SecretInjector:
         Args:
             agency_id: Current agency ID for namespacing
             team_id: Optional team ID for team-scoped secrets
+            strict_mode: If True, raise exception on Key Vault failures (production)
+                        If False, fallback to mock secrets (development)
         """
         self.agency_id = str(agency_id)
         self.team_id = str(team_id) if team_id else None
         self.secret_manager = get_secret_manager()
         self.secret_cache: Dict[str, str] = {}
+        self.strict_mode = strict_mode
     
     def inject_secrets(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -285,10 +289,15 @@ class SecretInjector:
         try:
             secret_value = self.secret_manager.get_secret(vault_key)
             if not secret_value:
+                if self.strict_mode:
+                    raise ValueError(f"Secret {vault_key} not found in Key Vault")
                 # Fallback to mock for development
+                logger.warning(f"Secret {vault_key} not found, using mock (strict_mode=False)")
                 secret_value = self._get_mock_secret(vault_key)
         except Exception as e:
-            logger.warning(f"Failed to fetch {vault_key}: {e}, using mock")
+            if self.strict_mode:
+                raise ValueError(f"Failed to fetch secret {vault_key}: {e}") from e
+            logger.warning(f"Failed to fetch {vault_key}: {e}, using mock (strict_mode=False)")
             secret_value = self._get_mock_secret(vault_key)
         
         # Cache result

@@ -465,20 +465,41 @@ class RecipeEvaluator:
         return resolved
     
     def _cast_value(self, value: str) -> Any:
-        """Cast string value to appropriate type"""
-        # Try integer
-        if value.isdigit() or (value.startswith('-') and value[1:].isdigit()):
-            return int(value)
+        """
+        Cast string value to appropriate type with edge case handling
         
-        # Try float
+        Args:
+            value: String value to cast
+            
+        Returns:
+            Typed value (int, float, bool, or string)
+        """
+        if not value or not isinstance(value, str):
+            return value
+        
+        # Try boolean (case-insensitive, multiple formats)
+        value_lower = value.lower().strip()
+        if value_lower in ('true', 'yes', '1'):
+            return True
+        if value_lower in ('false', 'no', '0'):
+            return False
+        
+        # Try integer (reject malformed like "3.14.15")
         try:
-            return float(value)
-        except ValueError:
+            if '.' not in value and not value.startswith('.'):
+                return int(value)
+        except (ValueError, OverflowError):
             pass
         
-        # Try boolean
-        if value.lower() in ('true', 'false'):
-            return value.lower() == 'true'
+        # Try float (reject malformed, check for inf/nan)
+        try:
+            if value.count('.') <= 1:
+                float_val = float(value)
+                # Reject infinity and NaN
+                if float_val != float('inf') and float_val != float('-inf') and float_val == float_val:
+                    return float_val
+        except (ValueError, OverflowError):
+            pass
         
         # Return as string
         return value

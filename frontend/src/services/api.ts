@@ -3,9 +3,9 @@
  */
 import axios from 'axios'
 
-// Use build-time injected URL or fallback
+// API URL injected at build time via vite.config.ts define
 declare const __API_BASE_URL__: string
-const API_BASE_URL = typeof __API_BASE_URL__ !== 'undefined' ? __API_BASE_URL__ : 'http://localhost:8000/api'
+const API_BASE_URL = __API_BASE_URL__
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

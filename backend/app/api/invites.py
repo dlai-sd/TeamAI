@@ -232,3 +232,108 @@ async def verify_invite_token(
         team_id=invite.team_id,
         invited_by_id=invite.invited_by_id,
     )
+
+
+# ============================================================================
+# Bootstrap Endpoint (First Admin Setup - Remove in Production)
+# ============================================================================
+
+from pydantic import BaseModel
+from datetime import datetime, timedelta
+import uuid
+from app.models import Agency, Team
+
+class BootstrapRequest(BaseModel):
+    email: str
+    bootstrap_secret: str = ""
+
+@router.post("/bootstrap", response_model=InviteResponse)
+async def bootstrap_admin(
+    request: BootstrapRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Bootstrap first agency admin (one-time setup).
+    Creates agency, team, and invite in one step.
+    
+    Security: Requires BOOTSTRAP_SECRET env var to match.
+    """
+    import os
+    
+    # Security check - require secret or allow if no users exist
+    bootstrap_secret = os.environ.get("BOOTSTRAP_SECRET", "teamai-bootstrap-2024")
+    
+    if request.bootstrap_secret != bootstrap_secret:
+        # Check if this is first setup (no agencies exist)
+        existing = db.execute(select(Agency)).scalars().first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Bootstrap requires secret or must be first setup"
+            )
+    
+    # Check if invite already exists
+    existing_invite = db.execute(
+        select(Invite).filter(Invite.email == request.email)
+    ).scalar_one_or_none()
+    
+    if existing_invite:
+        # Update to pending if expired
+        if existing_invite.status != InviteStatus.PENDING:
+            existing_invite.status = InviteStatus.PENDING
+            existing_invite.expires_at = datetime.utcnow() + timedelta(days=7)
+            db.commit()
+            db.refresh(existing_invite)
+        
+        return InviteResponse(
+            id=existing_invite.id,
+            email=existing_invite.email,
+            role=existing_invite.role,
+            status=existing_invite.status,
+            created_at=existing_invite.created_at,
+            expires_at=existing_invite.expires_at,
+            accepted_at=existing_invite.accepted_at,
+            agency_id=existing_invite.agency_id,
+            team_id=existing_invite.team_id,
+            invited_by_id=existing_invite.invited_by_id,
+        )
+    
+    # Get or create agency
+    agency = db.execute(select(Agency)).scalars().first()
+    if not agency:
+        agency = Agency(
+            id=uuid.uuid4(),
+            name="Default Agency",
+            is_active=True,
+        )
+        db.add(agency)
+        db.flush()
+    
+    # Create invite
+    invite = Invite(
+        id=uuid.uuid4(),
+        email=request.email,
+        role="AGENCY_ADMIN",
+        agency_id=agency.id,
+        team_id=None,
+        invited_by_id=None,
+        token=str(uuid.uuid4()),
+        status=InviteStatus.PENDING,
+        expires_at=datetime.utcnow() + timedelta(days=7),
+    )
+    db.add(invite)
+    db.commit()
+    db.refresh(invite)
+    
+    return InviteResponse(
+        id=invite.id,
+        email=invite.email,
+        role=invite.role,
+        status=invite.status,
+        created_at=invite.created_at,
+        expires_at=invite.expires_at,
+        accepted_at=invite.accepted_at,
+        agency_id=invite.agency_id,
+        team_id=invite.team_id,
+        invited_by_id=invite.invited_by_id,
+    )

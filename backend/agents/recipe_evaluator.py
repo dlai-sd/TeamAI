@@ -401,14 +401,13 @@ class RecipeEvaluator:
         
         elif component_name == 'ReportGenerator':
             # ReportGenerator needs data from analysis
+            # Note: format is set via component config in __init__
             report_data = self._build_report_data(node_inputs)
             title = config.get('title', 'Agent Report')
-            format_type = config.get('format', 'markdown')
             
             return await component.execute(
                 data=report_data,
-                title=title,
-                format=format_type
+                title=title
             )
         
         elif component_name == 'SubscriptionTracker':

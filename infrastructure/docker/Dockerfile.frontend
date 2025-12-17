@@ -30,10 +30,10 @@ RUN npm ci
 # Copy source code
 COPY frontend/ ./
 
-# Create .env file with production API URL (Vite reads this at build time)
-RUN echo "VITE_API_BASE_URL=https://teamai-backend.grayisland-ba13f170.eastus.azurecontainerapps.io/api" > .env
+# Set environment variable for Vite build (used in vite.config.ts)
+ENV VITE_API_BASE_URL=https://teamai-backend.grayisland-ba13f170.eastus.azurecontainerapps.io/api
 
-# Build application
+# Build application (picks up VITE_API_BASE_URL from environment)
 RUN npm run build
 
 # Production stage - serve static files with nginx

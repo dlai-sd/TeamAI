@@ -2,7 +2,28 @@
 
 **Virtual AI Workforce for Digital Marketing Agencies**
 
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/dlai-sd/TeamAI/releases)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Azure](https://img.shields.io/badge/deployed-Azure%20Container%20Apps-0078D4)](https://teamai-frontend.grayisland-ba13f170.eastus.azurecontainerapps.io/)
+
 TeamAI is a B2B SaaS platform that enables digital marketing agencies to scale infinitely by deploying specialized AI agents as an "inorganic" workforce—eliminating the traditional bottlenecks of hiring costs and physical office space.
+
+## 🎉 Version 0.1.0 Release (December 17, 2025)
+
+**First production release with working AI agent execution!**
+
+### What's Working
+- ✅ **SEO Site Audit Agent** - Analyze any website for SEO issues using Groq AI
+- ✅ **Google OAuth Authentication** - Secure sign-in with role-based access
+- ✅ **3-Panel Dashboard** - Collapsible sidebar, agents/teams view, info panel
+- ✅ **Real-time AI Execution** - ~2 second audits, ~$0.00007 per run
+- ✅ **Azure Production Deployment** - Fully containerized, auto-scaling
+
+### Live Demo
+- **Frontend:** https://teamai-frontend.grayisland-ba13f170.eastus.azurecontainerapps.io/
+- **Backend API:** https://teamai-backend.grayisland-ba13f170.eastus.azurecontainerapps.io/docs
+
+---
 
 ## The Problem
 
@@ -207,39 +228,46 @@ Project maintained by [dlai-sd](https://github.com/dlai-sd)
 
 ## Current Status
 
-**Phase:** ✅ Azure Production Deployment Verified - OAuth Flow Working End-to-End
+**Version:** 0.1.0 (December 17, 2025)  
+**Phase:** ✅ Production MVP with Working AI Agent
 
-**Completed (December 17, 2025):**
-- ✅ Architecture finalization (see [AI Instructions](.github/copilot-instructions.md))
-- ✅ Complete project structure (monorepo with backend/frontend)
-- ✅ Database schema with 11 tables (agencies, teams, users, agents, subscriptions, audit logs)
-- ✅ 3 Alembic migrations (initial schema, Google SSO, test data)
-- ✅ Google OAuth2 authentication with JWT tokens (30min expiry)
-- ✅ Role-Based Access Control (agency_admin, team_admin, team_user)
-- ✅ Invite system with bootstrap endpoint for first admin
-- ✅ Backend API (FastAPI + SQLAlchemy + Redis)
-- ✅ Frontend UI (React + TypeScript + Vite with AuthContext)
-- ✅ Protected routes with admin-level checks
-- ✅ Docker multi-stage builds (development + production)
-- ✅ **Azure Production Deployment - FULLY WORKING**
-- ✅ **GitHub Actions CI/CD Pipeline**
-- ✅ Agent Runtime Engine (Recipe Evaluator with custom DAG executor)
-- ✅ Component Library (WebCrawler, LLMProcessor, ReportGenerator)
-- ✅ Groq API Integration (llama-3.1-8b-instant + llama-3.3-70b-versatile fallback)
+### v0.1.0 Features
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **SEO Site Audit** | ✅ Live | Enter any URL, get AI-powered SEO analysis |
+| **Google OAuth** | ✅ Live | Secure authentication with JWT tokens |
+| **Dashboard** | ✅ Live | 3-panel layout with sidebar, agents view, info panel |
+| **Agent Execution** | ✅ Live | Real Groq API calls (~2s, ~870 tokens, ~$0.00007) |
+| **Azure Deployment** | ✅ Live | Container Apps with CI/CD |
+| **Recipe Engine** | ✅ Live | YAML-defined workflows with LangGraph DAG |
 
-**Production Environment (Verified Working):**
-- 🌐 Frontend: https://teamai-frontend.grayisland-ba13f170.eastus.azurecontainerapps.io/
-- 🔧 Backend: https://teamai-backend.grayisland-ba13f170.eastus.azurecontainerapps.io/
-- 💾 PostgreSQL: teamai-db.postgres.database.azure.com
-- ⚡ Redis: teamai-redis.redis.cache.windows.net
-- 🔐 Secrets: Azure Key Vault (teamai-vault)
-- 📦 Registry: teamairegistry.azurecr.io
-- 💰 Monthly Cost: ~$96/month infrastructure
+### Production Metrics
+- **Execution Time:** ~1.7-2.5 seconds per audit
+- **Token Usage:** ~800-900 tokens per audit
+- **Cost per Audit:** ~$0.00007 (Groq llama-3.1-8b-instant)
+- **Infrastructure:** ~$96/month (Azure Container Apps + PostgreSQL + Redis)
 
-**Next Steps:**
-1. Test production agent execution (SEO site audit)
-2. Implement Traditional ML layer (A/B testing, quality scoring)
-3. Add more agent types (Social Media Scheduler, Lead Qualifier)
+### Production URLs
+- 🌐 **Frontend:** https://teamai-frontend.grayisland-ba13f170.eastus.azurecontainerapps.io/
+- 🔧 **Backend:** https://teamai-backend.grayisland-ba13f170.eastus.azurecontainerapps.io/
+- 📖 **API Docs:** https://teamai-backend.grayisland-ba13f170.eastus.azurecontainerapps.io/docs
+
+---
+
+## Roadmap
+
+### v0.2.0 (Planned)
+- [ ] Social Media Scheduler Agent
+- [ ] Lead Qualifier Agent  
+- [ ] A/B Testing Framework
+- [ ] User feedback collection
+- [ ] Scheduled/cron-based tasks
+
+### Future
+- Customer-built cookbooks/recipes
+- Modular pricing topups
+- ML-powered quality scoring
+- Multi-region deployment
 
 ---
 

@@ -453,7 +453,7 @@ class TestErrorHandling:
             # Verify subscription tracker was called with failed status
             assert mock_tracker.execute.called
             call_args = mock_tracker.execute.call_args[0][0]
-            assert call_args.get('execution_status') == 'failed'
+            assert call_args.get('status') == 'failed'  # Key is 'status', not 'execution_status'
 
 
 class TestComponentExecution:

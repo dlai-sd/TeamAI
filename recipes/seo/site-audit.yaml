@@ -81,6 +81,18 @@ recipe:
             - "recommendations"
             - "detailed_findings"
         depends_on: ["analyze_structure"]
+      
+      # Node 4: Subscription Tracker (MANDATORY - cannot be removed)
+      - id: "track_usage"
+        component: "SubscriptionTracker"
+        description: "Meter execution for billing - mandatory compliance layer"
+        config:
+          # IDs injected at runtime by recipe evaluator
+          agent_instance_id: "{{ runtime.agent_instance_id }}"
+          recipe_id: "{{ runtime.recipe_id }}"
+          agency_id: "{{ runtime.agency_id }}"
+        depends_on: ["generate_report"]
+        mandatory: true  # Cannot be bypassed
     
     # Define execution order (directed acyclic graph)
     edges:
@@ -88,6 +100,8 @@ recipe:
         to: "analyze_structure"
       - from: "analyze_structure"
         to: "generate_report"
+      - from: "generate_report"
+        to: "track_usage"
     
     # Final output specification
     output:

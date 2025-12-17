@@ -1,0 +1,87 @@
+name: Deploy to Azure Container Apps
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  RESOURCE_GROUP: teamai-prod
+  ACR_NAME: teamairegistry
+  BACKEND_APP_NAME: teamai-backend
+  FRONTEND_APP_NAME: teamai-frontend
+  KEYVAULT_NAME: teamai-vault
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Login to Azure Container Registry
+        run: |
+          az acr login --name ${{ env.ACR_NAME }}
+      
+      - name: Build and push backend image
+        run: |
+          docker build \
+            -f infrastructure/docker/Dockerfile.backend \
+            -t ${{ env.ACR_NAME }}.azurecr.io/teamai-backend:${{ github.sha }} \
+            -t ${{ env.ACR_NAME }}.azurecr.io/teamai-backend:latest \
+            .
+          docker push ${{ env.ACR_NAME }}.azurecr.io/teamai-backend:${{ github.sha }}
+          docker push ${{ env.ACR_NAME }}.azurecr.io/teamai-backend:latest
+      
+      - name: Build and push frontend image
+        run: |
+          docker build \
+            -f infrastructure/docker/Dockerfile.frontend \
+            -t ${{ env.ACR_NAME }}.azurecr.io/teamai-frontend:${{ github.sha }} \
+            -t ${{ env.ACR_NAME }}.azurecr.io/teamai-frontend:latest \
+            .
+          docker push ${{ env.ACR_NAME }}.azurecr.io/teamai-frontend:${{ github.sha }}
+          docker push ${{ env.ACR_NAME }}.azurecr.io/teamai-frontend:latest
+      
+      - name: Deploy backend to Container Apps
+        run: |
+          az containerapp update \
+            --name ${{ env.BACKEND_APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ env.ACR_NAME }}.azurecr.io/teamai-backend:${{ github.sha }} \
+            --set-env-vars "BUILD_SHA=${{ github.sha }}"
+      
+      - name: Deploy frontend to Container Apps
+        run: |
+          az containerapp update \
+            --name ${{ env.FRONTEND_APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --image ${{ env.ACR_NAME }}.azurecr.io/teamai-frontend:${{ github.sha }} \
+            --set-env-vars "BUILD_SHA=${{ github.sha }}"
+      
+      - name: Verify backend deployment
+        run: |
+          echo "Waiting 30s for backend to start..."
+          sleep 30
+          curl -f https://teamai-backend.grayisland-ba13f170.eastus.azurecontainerapps.io/health || exit 1
+          echo "✅ Backend is healthy"
+      
+      - name: Verify frontend deployment
+        run: |
+          curl -f https://teamai-frontend.grayisland-ba13f170.eastus.azurecontainerapps.io/ || exit 1
+          echo "✅ Frontend is healthy"
+      
+      - name: Deployment summary
+        run: |
+          echo "🚀 Deployment completed successfully!"
+          echo "📦 Backend image: ${{ env.ACR_NAME }}.azurecr.io/teamai-backend:${{ github.sha }}"
+          echo "📦 Frontend image: ${{ env.ACR_NAME }}.azurecr.io/teamai-frontend:${{ github.sha }}"
+          echo "🌐 Backend URL: https://teamai-backend.grayisland-ba13f170.eastus.azurecontainerapps.io"
+          echo "🌐 Frontend URL: https://teamai-frontend.grayisland-ba13f170.eastus.azurecontainerapps.io"

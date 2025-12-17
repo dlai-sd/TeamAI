@@ -1,12 +1,10 @@
-"""
-Audit Logging, Task Queue, and A/B Testing Models
+""" Audit Logging, Task Queue, and A/B Testing Models
 """
 import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, ForeignKey, Numeric, Integer, Boolean
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
-from app.utils.db import Base
+from app.utils.db import Base, UUID, JSONB
 
 
 class AuditLog(Base):

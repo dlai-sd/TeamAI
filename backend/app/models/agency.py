@@ -5,9 +5,8 @@ import uuid
 import enum
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Text, Enum
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from app.utils.db import Base
+from app.utils.db import Base, UUID
 
 
 class UserRole(str, enum.Enum):

@@ -4,9 +4,8 @@ Subscription and Billing Models
 import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, ForeignKey, Numeric, Integer
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from app.utils.db import Base
+from app.utils.db import Base, UUID
 
 
 class Subscription(Base):

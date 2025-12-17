@@ -5,9 +5,8 @@ import uuid
 import enum
 from datetime import datetime, timedelta
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Enum
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from app.utils.db import Base
+from app.utils.db import Base, UUID
 
 
 class InviteStatus(str, enum.Enum):

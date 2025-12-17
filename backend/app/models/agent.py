@@ -4,9 +4,8 @@ Agent-related Models (AgentRole, Cookbook, Recipe, AgentInstance)
 import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Text, Numeric, Integer
-from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
-from app.utils.db import Base
+from app.utils.db import Base, UUID, JSONB
 
 
 class AgentRole(Base):

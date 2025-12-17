@@ -57,12 +57,17 @@ async def google_login_initiate(
     state = secrets.token_urlsafe(32)
     
     # Store state in Redis with 10 minute expiry
-    redis_conn = await get_redis()
-    await redis_conn.setex(
-        f"oauth_state:{state}",
-        600,  # 10 minutes
-        domain or ""
-    )
+    try:
+        redis_conn = await get_redis()
+        result = await redis_conn.setex(
+            f"oauth_state:{state}",
+            600,  # 10 minutes
+            domain or ""
+        )
+        print(f"[OAuth] State stored in Redis: {state[:10]}... result={result}")
+    except Exception as e:
+        print(f"[OAuth ERROR] Failed to store state in Redis: {e}")
+        # Continue anyway - we'll validate on callback
     
     # Get authorization URL from Google
     auth_url = google_oauth_client.get_authorization_url(state, hd=domain)
@@ -87,18 +92,39 @@ async def google_callback(
     Returns:
         OAuth2CallbackResponse: JWT tokens and user profile
     """
+    print(f"[OAuth] Callback received - state: {state[:10]}..., code: {code[:20]}...")
+    
     # Verify state parameter (CSRF protection) from Redis
-    redis_conn = await get_redis()
-    domain = await redis_conn.get(f"oauth_state:{state}")
-    
-    if domain is None:
+    try:
+        redis_conn = await get_redis()
+        domain = await redis_conn.get(f"oauth_state:{state}")
+        print(f"[OAuth] Redis lookup result: {domain}")
+        
+        if domain is None:
+            print(f"[OAuth ERROR] State not found in Redis: oauth_state:{state[:10]}...")
+            # Check if Redis is working at all
+            test_key = "redis_health_check"
+            await redis_conn.setex(test_key, 10, "ok")
+            test_value = await redis_conn.get(test_key)
+            print(f"[OAuth] Redis health check: {test_value}")
+            
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or expired state parameter - OAuth state not found in Redis"
+            )
+        
+        # Remove used state from Redis
+        await redis_conn.delete(f"oauth_state:{state}")
+        print(f"[OAuth] State validated and removed from Redis")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[OAuth ERROR] Redis connection error: {e}")
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired state parameter"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Redis connection error: {str(e)}"
         )
-    
-    # Remove used state from Redis
-    await redis_conn.delete(f"oauth_state:{state}")
     
     try:
         # Exchange authorization code for access token

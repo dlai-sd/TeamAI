@@ -105,7 +105,7 @@ class WorkflowSchema(BaseModel):
     edges: List[WorkflowEdgeSchema] = Field(..., description="Workflow edges (execution order)")
     output: WorkflowOutputSchema = Field(..., description="Final output definition")
     
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_workflow_graph(cls, values):
         """Validate workflow is a valid DAG"""
         nodes = values.get('nodes', [])

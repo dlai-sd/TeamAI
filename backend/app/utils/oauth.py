@@ -14,12 +14,17 @@ class GoogleOAuthClient:
     def __init__(self):
         self.client_id = settings.GOOGLE_CLIENT_ID
         self.client_secret = settings.GOOGLE_CLIENT_SECRET
-        self.redirect_uri = settings.effective_redirect_uri  # Use property for dynamic URL
+        # Don't cache redirect_uri - compute dynamically to pick up env vars
         
         # Google OAuth endpoints
         self.authorize_url = "https://accounts.google.com/o/oauth2/v2/auth"
         self.token_url = "https://oauth2.googleapis.com/token"
         self.userinfo_url = "https://www.googleapis.com/oauth2/v2/userinfo"
+    
+    @property
+    def redirect_uri(self) -> str:
+        """Get redirect URI dynamically (allows env var changes without restart)"""
+        return settings.effective_redirect_uri
     
     def get_authorization_url(self, state: str, hd: str = None) -> str:
         """

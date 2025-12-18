@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your AI-Powered Marketing Journey | Yashus</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0f1e;
+            color: white;
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        /* Logo Animation Container */
+        .logo-intro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0f1e 0%, #1a1f3e 50%, #2a2f4e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeOut 0.5s ease 3.5s forwards;
+        }
+
+        .logo-intro-box {
+            width: 85%;
+            height: 90px;
+            background: white;
+            border-radius: 30px;
+            padding: 20px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: logoSlideIn 1s ease forwards, logoMoveToTop 1s ease 2s forwards;
+        }
+
+        .logo-intro-box img {
+            height: 50px;
+            width: auto;
+            display: block;
+        }
+
+        @keyframes logoSlideIn {
+            from {
+                transform: translateX(-100vw);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes logoMoveToTop {
+            to {
+                transform: translateY(calc(-50vh + 65px));
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+
+        /* Header with logo */
+        .header {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 85%;
+            height: 90px;
+            background: white;
+            padding: 20px 40px;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            animation: headerFadeIn 0.5s ease 3s forwards;
+        }
+
+        @keyframes headerFadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .header img {
+            height: 50px;
+            width: auto;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            background: linear-gradient(135deg, #0a0f1e 0%, #1a1f3e 50%, #2a2f4e 100%);
+        }
+
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-orb-1 {
+            width: 400px;
+            height: 400px;
+            background: #3b82f6;
+            top: -100px;
+            left: -100px;
+        }
+
+        .bg-orb-2 {
+            width: 500px;
+            height: 500px;
+            background: #8b5cf6;
+            bottom: -150px;
+            right: -150px;
+            animation-delay: -5s;
+        }
+
+        .bg-orb-3 {
+            width: 300px;
+            height: 300px;
+            background: #fbbf24;
+            top: 50%;
+            left: 50%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-50px, 50px) scale(0.9); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            height: calc(95vh - 90px - 3vh);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: calc(20px + 90px + 3vh);
+            padding-bottom: 5vh;
+            opacity: 0;
+            animation: contentFadeIn 0.8s ease 3.2s forwards;
+            transition: opacity 0.3s ease;
+        }
+
+        @keyframes contentFadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .content {
+            width: 85%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 18px 60px 60px 60px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .content .logo {
+            display: none; /* Hidden since logo is in header */
+        }
+
+        .logo {
+            width: 220px;
+            margin-bottom: 40px;
+        }
+
+        .headline {
+            font-size: 2.1em;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b, #ffffff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .subheadline {
+            font-size: 1.3em;
+            color: #cbd5e1;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .value-points {
+            margin-bottom: 40px;
+            display: flex;
+            gap: 5%;
+            width: 100%;
+            align-items: stretch;
+        }
+
+        .value-cards-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 42.5%;
+        }
+
+        .empty-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            max-width: 42.5%;
+            height: auto;
+        }
+
+        .value-point {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 0;
+            font-size: 1.05em;
+            color: #e2e8f0;
+            line-height: 1.6;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 20px 24px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+            width: 100%;
+        }
+
+        .value-point:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #fbbf24;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(251, 191, 36, 0.2);
+        }
+
+        .value-point:nth-child(1) { animation-delay: 3.4s; }
+        .value-point:nth-child(2) { animation-delay: 3.7s; }
+        .value-point:nth-child(3) { animation-delay: 4.0s; }
+        .value-point:nth-child(4) { animation-delay: 4.3s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .value-point-icon {
+            color: #fbbf24;
+            font-size: 1.5em;
+            margin-top: 0;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .confidential-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 2px solid #22c55e;
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-size: 0.95em;
+            color: #22c55e;
+            margin-bottom: 50px;
+        }
+
+        .trust-section {
+            text-align: center;
+            margin-bottom: 0;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 4.6s forwards;
+            flex: 1;
+            max-width: 42.5%;
+        }
+
+        .trust-stats-container {
+            display: flex;
+            gap: 5%;
+            margin-bottom: 50px;
+            width: 100%;
+            align-items: stretch;
+        }
+
+        .button-placeholder {
+            flex: 1;
+            max-width: 42.5%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .trust-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 20px;
+        }
+
+        .trust-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px 30px;
+            text-align: left;
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1em;
+            color: #cbd5e1;
+        }
+
+        .trust-icon {
+            color: #22c55e;
+            font-size: 1.3em;
+        }
+
+        .stats-banner {
+            display: flex;
+            flex-direction: row;
+            gap: 0;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 4.9s forwards;
+            flex: 1;
+            max-width: 42.5%;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 0;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 0.8em;
+            font-weight: 900;
+            color: #fbbf24;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.425em;
+            color: #94a3b8;
+        }
+
+        .action-button {
+            width: 100%;
+            max-width: 400px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0a0f1e;
+            font-size: 1.3em;
+            font-weight: 800;
+            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 auto;
+            display: block;
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+            text-decoration: none;
+            text-align: center;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease 5.2s forwards;
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(251, 191, 36, 0.5);
+        }
+
+        /* Frame 2 specific styles - no animation delays */
+        #frame2 .headline,
+        #frame2 .action-button {
+            opacity: 1;
+            animation: none;
+        }
+
+        #frame2 .content {
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            padding: 18px 60px 60px 60px;
+        }
+
+        /* Card stack interface - Three columns */
+        .roadmap-container {
+            width: 100%;
+            padding: 40px 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            z-index: 1;
+        }
+
+        .roadmap-title {
+            text-align: center;
+            font-size: 1.6em;
+            color: #fbbf24;
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+        }
+
+        .three-column-layout {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            max-width: 1200px;
+            gap: 40px;
+            position: relative;
+            z-index: 2;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-stack-left,
+        .card-stack-right {
+            flex: 0 0 250px;
+            position: relative;
+            min-height: 500px;
+            z-index: 3;
+            background: rgba(20, 20, 40, 0.9);
+            border: 4px solid #fbbf24;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5), inset 0 0 20px rgba(251, 191, 36, 0.1);
+            overflow: visible !important;
+        }
+
+        .stack-title {
+            text-align: center;
+            font-size: 1.1em;
+            color: #fbbf24;
+            margin-bottom: 20px;
+            font-weight: 700;
+            padding: 10px;
+            background: rgba(251, 191, 36, 0.2);
+            border-radius: 8px;
+            border: 2px solid #fbbf24;
+        }
+
+        .stack-items {
+            position: relative;
+            height: 450px;
+            min-height: 450px;
+            width: 100%;
+            z-index: 999;
+            background: rgba(10, 10, 30, 0.8);
+            border-radius: 10px;
+            padding: 10px;
+            border: 3px dashed rgba(251, 191, 36, 0.5);
+            overflow: visible !important;
+        }
+
+        .stack-card {
+            position: absolute;
+            width: calc(100% - 20px);
+            background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+            border: 4px solid #fbbf24;
+            border-radius: 12px;
+            padding: 15px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85em;
+            color: #000000 !important;
+            font-weight: 700;
+            z-index: 1000 !important;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.8),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stack-card:hover {
+            border-color: rgba(251, 191, 36, 0.8);
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(245, 158, 11, 0.2));
+            transform: translateY(-3px) scale(1.02);
+            z-index: 100 !important;
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .card-stack-left .stack-card:hover {
+            transform: translateX(-8px) translateY(-3px) scale(1.02);
+        }
+
+        .card-stack-right .stack-card:hover {
+            transform: translateX(8px) translateY(-3px) scale(1.02);
+        }
+
+        .stack-card-number {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #0a0f1e;
+            font-size: 0.9em;
+            box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+        }
+
+        .stack-card-title {
+            font-weight: 600;
+            line-height: 1.4;
+            flex: 1;
+            color: #f1f5f9;
+        }
+
+        .card-stack-center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: rgba(20, 20, 40, 0.9);
+            border: 4px solid #fbbf24;
+            border-radius: 15px;
+            padding: 30px 20px;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5), inset 0 0 20px rgba(251, 191, 36, 0.1);
+            position: relative;
+            z-index: 3;
+        }
+
+        .card-stack-container {
+            position: relative;
+            width: 400px;
+            height: 500px;
+            perspective: 1000px;
+            z-index: 4;
+        }
+
+        .playing-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(20, 25, 45, 0.95), rgba(10, 15, 30, 0.95));
+            border: 4px solid #fbbf24;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 10px 40px rgba(251, 191, 36, 0.4);
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            overflow: hidden;
+            z-index: 5;
+        }
+
+        .playing-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(251, 191, 36, 0.3);
+            border-color: rgba(251, 191, 36, 0.6);
+        }
+
+        .card-number {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: 900;
+            color: #0a0f1e;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+        }
+
+        .card-step-label {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 0.9em;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .card-title {
+            font-size: 1.8em;
+            color: #fbbf24;
+            margin-bottom: 30px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .card-question {
+            font-size: 1.2em;
+            color: #e2e8f0;
+            line-height: 1.6;
+            max-width: 90%;
+        }
+
+        .card-back-content {
+            display: none;
+        }
+
+        .playing-card.flipped .card-back-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+        }
+
+        .playing-card.flipped .card-question {
+            display: none;
+        }
+
+        .solution-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .solution-text {
+            font-size: 1.1em;
+            color: #cbd5e1;
+            line-height: 1.8;
+            text-align: center;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #fbbf24;
+        }
+
+        .swipe-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .swipe-button {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border: none;
+            color: #0a0f1e;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .swipe-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(251, 191, 36, 0.5);
+        }
+
+        .swipe-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .flip-button {
+            background: rgba(251, 191, 36, 0.1);
+            border: 2px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .flip-button:hover {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.6);
+        }
+
+        .card-instruction {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.95em;
+            font-style: italic;
+        }
+
+        .stack-count {
+            text-align: center;
+            margin-top: 10px;
+            color: #94a3b8;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .playing-card.swiping-right {
+            animation: swipeRight 0.5s ease forwards;
+        }
+
+        @keyframes swipeRight {
+            to {
+                transform: translateX(500px) rotate(15deg);
+                opacity: 0;
+            }
+        }
+
+        .card-nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .card-nav-btn {
+            background: rgba(251, 191, 36, 0.1);
+            border: 2px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .card-nav-btn:hover {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(251, 191, 36, 0.3);
+        }
+
+        .card-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @keyframes cardSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-100px) rotate(-5deg);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) rotate(0deg);
+            }
+        }
+
+        /* Modal overlay for solution details */
+        .solution-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .solution-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+        }
+
+        .solution-content {
+            background: linear-gradient(135deg, rgba(10, 15, 30, 0.95), rgba(20, 25, 45, 0.95));
+            border: 2px solid rgba(251, 191, 36, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .solution-modal.active .solution-content {
+            transform: scale(1);
+        }
+
+        .solution-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2em;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .solution-close:hover {
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .solution-step-number {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: 900;
+            color: #0a0f1e;
+            margin-bottom: 20px;
+        }
+
+        .solution-title {
+            font-size: 1.8em;
+            color: #fbbf24;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .solution-question {
+            font-size: 1.1em;
+            color: #e2e8f0;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+
+        .solution-method {
+            background: rgba(251, 191, 36, 0.1);
+            border-left: 4px solid #fbbf24;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .solution-method-title {
+            font-size: 1em;
+            color: #fbbf24;
+            margin-bottom: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .solution-method-title::before {
+            content: '🔬';
+            font-size: 1.2em;
+        }
+
+        .solution-method-text {
+            font-size: 0.95em;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .progress-indicator {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(251, 191, 36, 0.2);
+            color: #94a3b8;
+            font-size: 0.9em;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fbbf24;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #fbbf24;
+            transform: translateX(-3px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo Intro Animation -->
+    <div class="logo-intro">
+        <div class="logo-intro-box">
+            <img src="assets/yashus-logo.png" alt="Yashus">
+        </div>
+    </div>
+
+    <!-- Fixed Header with Logo -->
+    <div class="header">
+        <img src="assets/yashus-logo.png" alt="Yashus">
+    </div>
+
+    <div class="bg-animation"></div>
+
+    <script>
+        const cardData = [
+            {
+                title: "Define Your Foundation",
+                question: "Tell us about your business and what you sell",
+                solution: "Industry benchmarking & AI-powered business model analysis",
+                icon: "🏢"
+            },
+            {
+                title: "Pinpoint Your Challenges",
+                question: "What marketing challenges are you facing right now?",
+                solution: "Pattern recognition from 500+ case studies & AI diagnosis",
+                icon: "🎯"
+            },
+            {
+                title: "Review Past Efforts",
+                question: "What have you already tried to solve these problems?",
+                solution: "Gap analysis using statistical methods & success probability scoring",
+                icon: "📊"
+            },
+            {
+                title: "Envision Your Goals",
+                question: "What does success look like for your business?",
+                solution: "Goal-setting framework with AI-validated realistic targets",
+                icon: "🎨"
+            },
+            {
+                title: "Understand Your Market",
+                question: "Who are your main competitors in the market?",
+                solution: "Competitor analysis & market positioning algorithms",
+                icon: "🔍"
+            },
+            {
+                title: "Set Expectations",
+                question: "When do you want to see results?",
+                solution: "Timeline optimization using regression models & historical data",
+                icon: "⏰"
+            },
+            {
+                title: "Align Your Budget",
+                question: "What's your budget for marketing improvements?",
+                solution: "ROI prediction models & budget allocation algorithms",
+                icon: "💰"
+            },
+            {
+                title: "Map Stakeholders",
+                question: "Who needs to be involved in making decisions?",
+                solution: "Organizational readiness assessment & change management scoring",
+                icon: "👥"
+            },
+            {
+                title: "Get Your Roadmap",
+                question: "How can we reach you with your personalized roadmap?",
+                solution: "AI-generated action plan with prioritized recommendations",
+                icon: "🗺️"
+            }
+        ];
+
+        let currentCardIndex = 0;
+        let isFlipped = false;
+        let completedCards = [];
+
+        function initializeStacks() {
+            console.log('=== INITIALIZING STACKS ===');
+            console.log('Frame 2 display:', document.getElementById('frame2').style.display);
+            console.log('Left stack element exists:', !!document.getElementById('leftStack'));
+            
+            // Add a test element to verify the container is accessible
+            const leftStack = document.getElementById('leftStack');
+            if (leftStack) {
+                const testDiv = document.createElement('div');
+                testDiv.style.cssText = 'position:absolute; top:10px; left:10px; width:200px; height:80px; background:red; color:white; padding:20px; z-index:9999; font-size:16px; border:5px solid yellow;';
+                testDiv.textContent = 'TEST ELEMENT - If you see this, JavaScript works!';
+                leftStack.appendChild(testDiv);
+                console.log('Test element added to leftStack');
+            }
+            
+            renderLeftStack();
+            renderCurrentCard();
+            renderRightStack();
+            updateCounts();
+        }
+
+        function renderLeftStack() {
+            const leftStack = document.getElementById('leftStack');
+            console.log('Left stack element:', leftStack);
+            if (!leftStack) return;
+            
+            leftStack.innerHTML = '';
+            // Show all pending cards (including current) - REVERSED so card 9 at bottom, card 1 on top
+            const allPending = cardData.slice(currentCardIndex).reverse();
+            console.log('Rendering', allPending.length, 'cards in left stack');
+            
+            allPending.forEach((card, index) => {
+                const stackCard = document.createElement('div');
+                stackCard.className = 'stack-card';
+                stackCard.style.position = 'absolute';
+                stackCard.style.bottom = '0px';
+                stackCard.style.left = '0px';
+                stackCard.style.zIndex = (1000 + index).toString();
+                stackCard.style.opacity = '1';
+                stackCard.style.width = 'calc(100% - 20px)';
+                stackCard.style.background = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
+                stackCard.style.border = '4px solid #fbbf24';
+                stackCard.style.borderRadius = '12px';
+                stackCard.style.padding = '15px 12px';
+                stackCard.style.color = '#ffffff';
+                stackCard.style.fontWeight = '700';
+                stackCard.style.display = 'flex';
+                stackCard.style.alignItems = 'center';
+                stackCard.style.gap = '10px';
+                stackCard.style.cursor = 'pointer';
+                stackCard.style.minHeight = '60px';
+                const cardNumber = cardData.length - currentCardIndex - index;
+                stackCard.innerHTML = `
+                    <span style="flex-shrink: 0; width: 30px; height: 30px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; font-size: 0.9em;">${cardNumber}</span>
+                    <span style="flex: 1; font-size: 0.85em; color: #ffffff;">${card.title}</span>
+                `;
+                leftStack.appendChild(stackCard);
+                console.log('Added card:', card.title, 'at z-index:', stackCard.style.zIndex);
+            });
+        }
+
+        function renderCurrentCard() {
+            const container = document.getElementById('cardStack');
+            if (!container || currentCardIndex >= cardData.length) {
+                if (container) container.innerHTML = '<p style="color: #fbbf24; text-align: center; padding: 40px;">🎉 All cards completed!</p>';
+                document.getElementById('pushButton').disabled = true;
+                return;
+            }
+            
+            const card = cardData[currentCardIndex];
+            container.innerHTML = `
+                <div class="playing-card" id="currentCard">
+                    <div class="card-number">${currentCardIndex + 1}</div>
+                    <div class="card-step-label">Step ${currentCardIndex + 1} of 9</div>
+                    <div class="card-content">
+                        <div class="card-title">${card.title}</div>
+                        <div class="card-question">${card.question}</div>
+                        <div class="card-back-content">
+                            <div class="solution-icon">${card.icon}</div>
+                            <div class="solution-text">${card.solution}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            isFlipped = false;
+        }
+
+        function renderRightStack() {
+            const rightStack = document.getElementById('rightStack');
+            if (!rightStack) return;
+            
+            rightStack.innerHTML = '';
+            
+            completedCards.forEach((card, index) => {
+                const stackCard = document.createElement('div');
+                stackCard.className = 'stack-card';
+                stackCard.style.position = 'absolute';
+                stackCard.style.bottom = '0px';
+                stackCard.style.left = '0px';
+                stackCard.style.zIndex = (1000 + index).toString();
+                stackCard.style.opacity = '1';
+                stackCard.style.width = 'calc(100% - 20px)';
+                stackCard.style.background = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
+                stackCard.style.border = '4px solid #fbbf24';
+                stackCard.style.borderRadius = '12px';
+                stackCard.style.padding = '15px 12px';
+                stackCard.style.color = '#ffffff';
+                stackCard.style.fontWeight = '700';
+                stackCard.style.display = 'flex';
+                stackCard.style.alignItems = 'center';
+                stackCard.style.gap = '10px';
+                stackCard.style.cursor = 'pointer';
+                stackCard.style.minHeight = '60px';
+                stackCard.innerHTML = `
+                    <span style="flex-shrink: 0; width: 30px; height: 30px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; font-size: 0.9em;">${card.number}</span>
+                    <span style="flex: 1; font-size: 0.85em; color: #ffffff;">${card.icon} ${card.title}</span>
+                `;
+                stackCard.title = card.solution;
+                rightStack.appendChild(stackCard);
+            });
+        }
+
+        function updateCounts() {
+            const leftCount = document.getElementById('leftCount');
+            const rightCount = document.getElementById('rightCount');
+            
+            const remaining = cardData.length - currentCardIndex;
+            leftCount.textContent = `${remaining} remaining`;
+            rightCount.textContent = `${completedCards.length} completed`;
+        }
+
+        function toggleCardFlip() {
+            const card = document.getElementById('currentCard');
+            if (!card) return;
+            
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                card.classList.add('flipped');
+            } else {
+                card.classList.remove('flipped');
+            }
+        }
+
+        function pushCardRight() {
+            if (currentCardIndex >= cardData.length) return;
+            
+            const card = document.getElementById('currentCard');
+            if (!card) return;
+            
+            // Add to completed stack
+            completedCards.push({
+                ...cardData[currentCardIndex],
+                number: currentCardIndex + 1
+            });
+            
+            // Animate card swiping right
+            card.classList.add('swiping-right');
+            
+            setTimeout(() => {
+                currentCardIndex++;
+                initializeStacks();
+            }, 500);
+        }
+
+        // Initialize when frame 2 is shown
+        function showSecondFrame(event) {
+            event.preventDefault();
+            const frame1 = document.getElementById('frame1');
+            const frame2 = document.getElementById('frame2');
+            
+            frame1.style.opacity = '0';
+            
+            setTimeout(() => {
+                frame1.style.display = 'none';
+                frame2.style.display = 'flex';
+                frame2.style.opacity = '0';
+                
+                setTimeout(() => {
+                    frame2.style.opacity = '1';
+                    initializeStacks();
+                }, 50);
+            }, 300);
+        }
+
+        function showFirstFrame(event) {
+            event.preventDefault();
+            const frame1 = document.getElementById('frame1');
+            const frame2 = document.getElementById('frame2');
+            
+            frame2.style.opacity = '0';
+            
+            setTimeout(() => {
+                frame2.style.display = 'none';
+                frame1.style.display = 'flex';
+                frame1.style.opacity = '0';
+                
+                setTimeout(() => {
+                    frame1.style.opacity = '1';
+                }, 50);
+            }, 300);
+        }
+    </script>
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+    </div>
+
+    <div class="container" id="frame1">
+        <div class="content">
+            <img src="assets/yashus-logo.png" alt="Yashus" class="logo">
+            
+            <h1 class="headline">A decade of domain expertise, supercharged with cutting-edge AI</h1>
+            
+            <div class="value-points">
+                <div class="value-cards-column">
+                    <div class="value-point">
+                        <span class="value-point-icon">✦</span>
+                        <span><strong>Complete Digital Health Check:</strong> Assess every aspect from foundational setup to advanced maturity</span>
+                    </div>
+                    <div class="value-point">
+                        <span class="value-point-icon">✦</span>
+                        <span><strong>AI-Powered Gap Analysis:</strong> Identify what's holding you back and discover your best opportunities</span>
+                    </div>
+                    <div class="value-point">
+                        <span class="value-point-icon">✦</span>
+                        <span><strong>Actionable Roadmap:</strong> Get monthly milestones with realistic budgets and clear prioritized steps</span>
+                    </div>
+                    <div class="value-point">
+                        <span class="value-point-icon">✦</span>
+                        <span><strong>Yashus Legacy Expertise:</strong> Ten years of proven strategies combined with cutting-edge AI insights</span>
+                    </div>
+                </div>
+                <div class="empty-card"></div>
+            </div>
+
+            <div class="trust-stats-container">
+                <div class="trust-section">
+                    <div class="trust-title">Yashus WoW (Ways of working)</div>
+                    <div class="trust-items">
+                        <div class="trust-item">
+                            <span class="trust-icon">✓</span>
+                            <span>No up front commitment required</span>
+                        </div>
+                        <div class="trust-item">
+                            <span class="trust-icon">✓</span>
+                            <span>Instant results</span>
+                        </div>
+                        <div class="trust-item">
+                            <span class="trust-icon">✓</span>
+                            <span>Free comprehensive report</span>
+                        </div>
+                        <div class="trust-item">
+                            <span class="trust-icon">✓</span>
+                            <span>Data stays confidential</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-placeholder">
+                    <a href="#" class="action-button" onclick="showSecondFrame(event)">Understand how we do it</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Frame -->
+    <div class="container" id="frame2" style="display: none;">
+        <div class="content">
+            <a href="#" class="back-button" onclick="showFirstFrame(event)">← Back</a>
+            
+            <h1 class="headline">We will use this Proven, trusted and AI power boosted process of Yashus</h1>
+            
+            <div class="roadmap-container">
+                <p class="card-instruction">Review each card • Flip to see solution • Push right when ready</p>
+                
+                <div class="three-column-layout">
+                    <!-- Left Stack: Pending Questions -->
+                    <div class="card-stack-left">
+                        <div class="stack-title">Questions</div>
+                        <div class="stack-items" id="leftStack">
+                            <!-- Left stack cards generated by JS -->
+                        </div>
+                        <div class="stack-count" id="leftCount">9 remaining</div>
+                    </div>
+                    
+                    <!-- Center: Active Card -->
+                    <div class="card-stack-center">
+                        <div class="card-stack-container" id="cardStack">
+                            <!-- Active card generated by JS -->
+                        </div>
+                        <div class="swipe-controls">
+                            <button class="flip-button" onclick="toggleCardFlip()">🔄 Flip Card</button>
+                            <button class="swipe-button" id="pushButton" onclick="pushCardRight()">
+                                Push Right →
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Stack: Solved Cards -->
+                    <div class="card-stack-right">
+                        <div class="stack-title">How Yashus Solves This</div>
+                        <div class="stack-items" id="rightStack">
+                            <!-- Right stack cards generated by JS -->
+                        </div>
+                        <div class="stack-count" id="rightCount">0 completed</div>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="page2.html" class="action-button">Get Started</a>
+        </div>
+    </div>
+
+
+</body>
+</html>

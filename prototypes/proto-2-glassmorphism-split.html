@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototype 2: Glassmorphism Split-Screen | Yashus</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0f1e;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: linear-gradient(135deg, #0a0f1e 0%, #1a1f3e 50%, #2a2f4e 100%);
+        }
+
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-orb-1 {
+            width: 400px;
+            height: 400px;
+            background: #3b82f6;
+            top: -100px;
+            left: -100px;
+        }
+
+        .bg-orb-2 {
+            width: 500px;
+            height: 500px;
+            background: #8b5cf6;
+            bottom: -150px;
+            right: -150px;
+            animation-delay: -5s;
+        }
+
+        .bg-orb-3 {
+            width: 300px;
+            height: 300px;
+            background: #fbbf24;
+            top: 50%;
+            left: 50%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-50px, 50px) scale(0.9); }
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+        }
+
+        /* Left Panel - Input/Interaction */
+        .left-panel {
+            width: 50%;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Right Panel - AI Visualization */
+        .right-panel {
+            width: 50%;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Logo */
+        .logo {
+            width: 200px;
+            margin-bottom: 40px;
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Headline */
+        .headline {
+            font-size: 3.5em;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subheadline {
+            font-size: 1.4em;
+            color: #cbd5e1;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        /* Question Card */
+        .question-card {
+            margin-bottom: 30px;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .question-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .question-text {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+
+        .input-field {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 1.1em;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #fbbf24;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 40px;
+        }
+
+        .progress-label {
+            font-size: 0.9em;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #fbbf24);
+            border-radius: 8px;
+            width: 11%;
+            transition: width 0.6s ease;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+        }
+
+        /* AI Visualization - Right Panel */
+        .ai-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+        }
+
+        .ai-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border: 3px solid #8b5cf6;
+            border-radius: 50%;
+            animation: pulseRing 3s ease-out infinite;
+        }
+
+        .pulse-ring:nth-child(2) {
+            animation-delay: 1s;
+        }
+
+        .pulse-ring:nth-child(3) {
+            animation-delay: 2s;
+        }
+
+        @keyframes pulseRing {
+            0% {
+                width: 100%;
+                height: 100%;
+                opacity: 1;
+            }
+            100% {
+                width: 250%;
+                height: 250%;
+                opacity: 0;
+            }
+        }
+
+        .ai-logo {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Data Points */
+        .data-point {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(59, 130, 246, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            animation: dataFloat 4s ease-in-out infinite;
+        }
+
+        .data-point:nth-child(1) { top: 10%; left: 20%; animation-delay: 0s; }
+        .data-point:nth-child(2) { top: 20%; right: 15%; animation-delay: 0.5s; }
+        .data-point:nth-child(3) { bottom: 25%; left: 10%; animation-delay: 1s; }
+        .data-point:nth-child(4) { bottom: 15%; right: 20%; animation-delay: 1.5s; }
+        .data-point:nth-child(5) { top: 50%; left: 5%; animation-delay: 2s; }
+        .data-point:nth-child(6) { top: 50%; right: 5%; animation-delay: 2.5s; }
+
+        @keyframes dataFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(10px, -10px); }
+        }
+
+        /* Insight Cards - Right Panel */
+        .insights-container {
+            margin-top: 60px;
+            width: 100%;
+        }
+
+        .insight-card {
+            background: rgba(139, 92, 246, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid #8b5cf6;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            animation: insightPop 0.5s ease-out;
+        }
+
+        @keyframes insightPop {
+            from { opacity: 0; transform: scale(0.8) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .insight-label {
+            font-size: 0.8em;
+            color: #fbbf24;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .insight-text {
+            font-size: 1.1em;
+            color: #e2e8f0;
+            line-height: 1.5;
+        }
+
+        /* Action Button */
+        .action-button {
+            width: 100%;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0a0f1e;
+            font-size: 1.3em;
+            font-weight: 800;
+            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(251, 191, 36, 0.5);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 900;
+            color: #fbbf24;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+    </div>
+
+    <div class="container">
+        <!-- Left Panel: User Input -->
+        <div class="left-panel">
+            <img src="assets/yashus-logo.png" alt="Yashus" class="logo">
+            
+            <h1 class="headline">AI-Powered Marketing Intelligence</h1>
+            <p class="subheadline">Answer 9 questions. Get instant insights. Transform your business in 10 minutes.</p>
+            
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Your Progress</span>
+                    <span>1 of 9</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+            
+            <div class="glass-card question-card">
+                <div class="question-number">1</div>
+                <div class="question-text">What do you sell & who do you serve?</div>
+                <input type="text" class="input-field" placeholder="e.g., SaaS tools for healthcare providers">
+            </div>
+            
+            <button class="action-button">Continue →</button>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">Transformations</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">10 min</span>
+                    <span class="stat-label">Average Time</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">3.8x</span>
+                    <span class="stat-label">Avg ROI</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: AI Visualization -->
+        <div class="right-panel">
+            <div class="ai-container">
+                <div class="data-point">📊</div>
+                <div class="data-point">🎯</div>
+                <div class="data-point">💡</div>
+                <div class="data-point">⚡</div>
+                <div class="data-point">🔍</div>
+                <div class="data-point">✨</div>
+                
+                <div class="ai-core">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                    <svg class="ai-logo" viewBox="0 0 200 200">
+                        <defs>
+                            <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="100" cy="100" r="70" fill="url(#aiGradient)" opacity="0.3"/>
+                        <circle cx="100" cy="100" r="50" fill="none" stroke="url(#aiGradient)" stroke-width="4"/>
+                        <path d="M 100 60 L 130 80 L 130 120 L 100 140 L 70 120 L 70 80 Z" 
+                              fill="url(#aiGradient)" opacity="0.5"/>
+                        <circle cx="100" cy="100" r="15" fill="#fbbf24"/>
+                        <text x="100" y="110" font-size="24" font-weight="bold" text-anchor="middle" fill="#0a0f1e">AI</text>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="insights-container">
+                <div class="glass-card insight-card">
+                    <div class="insight-label">🎯 Industry Detection</div>
+                    <div class="insight-text">Analyzing your market sector and competitive landscape...</div>
+                </div>
+                <div class="glass-card insight-card">
+                    <div class="insight-label">📊 Data Processing</div>
+                    <div class="insight-text">Matching your profile against 500+ successful transformations...</div>
+                </div>
+                <div class="glass-card insight-card">
+                    <div class="insight-label">✨ Strategy Generation</div>
+                    <div class="insight-text">Building your custom roadmap with AI-powered insights...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

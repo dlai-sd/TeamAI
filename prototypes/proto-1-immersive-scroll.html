@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototype 1: Immersive Scroll Journey | Yashus</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Section Framework */
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 80px 5%;
+        }
+
+        /* Hero Section - Logo reveal with particle effect */
+        .hero-section {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            flex-direction: column;
+        }
+
+        .logo-container {
+            animation: logoReveal 2s ease-out forwards;
+        }
+
+        @keyframes logoReveal {
+            from { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+            to { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+
+        .hero-logo {
+            width: 300px;
+            height: auto;
+            margin-bottom: 40px;
+            filter: drop-shadow(0 10px 40px rgba(99, 102, 241, 0.6));
+        }
+
+        .hero-headline {
+            font-size: 4em;
+            font-weight: 900;
+            text-align: center;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 24px;
+            animation: slideUp 1.5s ease-out 0.5s backwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(60px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-subtext {
+            font-size: 1.5em;
+            color: #cbd5e1;
+            text-align: center;
+            max-width: 800px;
+            line-height: 1.6;
+            animation: slideUp 1.5s ease-out 0.8s backwards;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-20px); }
+        }
+
+        /* Problem Section - Split reveal */
+        .problem-section {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+
+        .split-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        .split-left {
+            padding-right: 40px;
+            border-right: 3px solid #3b82f6;
+        }
+
+        .problem-icon {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 3em;
+            font-weight: 800;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-text {
+            font-size: 1.3em;
+            line-height: 1.8;
+            color: #cbd5e1;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .stat-card {
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px solid #3b82f6;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: 900;
+            color: #fbbf24;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            color: #cbd5e1;
+        }
+
+        /* Solution Section - AI Visualization */
+        .solution-section {
+            background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+            flex-direction: column;
+        }
+
+        .ai-brain-container {
+            width: 600px;
+            height: 600px;
+            position: relative;
+            margin-bottom: 60px;
+        }
+
+        .ai-brain {
+            width: 100%;
+            height: 100%;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.6)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 60px rgba(139, 92, 246, 0.9)); }
+        }
+
+        .solution-headline {
+            font-size: 3.5em;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            max-width: 1200px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: rgba(139, 92, 246, 0.1);
+            border: 2px solid #8b5cf6;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: #fbbf24;
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.4);
+        }
+
+        .feature-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #fbbf24;
+        }
+
+        .feature-text {
+            font-size: 1.1em;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        /* Journey Section - Timeline */
+        .journey-section {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            flex-direction: column;
+        }
+
+        .journey-headline {
+            font-size: 3.5em;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 80px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .timeline {
+            width: 100%;
+            max-width: 1000px;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #3b82f6 0%, #8b5cf6 50%, #fbbf24 100%);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 80px;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(odd) {
+            justify-content: flex-start;
+        }
+
+        .timeline-item:nth-child(even) {
+            justify-content: flex-end;
+        }
+
+        .timeline-content {
+            width: 45%;
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px solid #3b82f6;
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            text-align: right;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background: #fbbf24;
+            border: 4px solid #0f172a;
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.8);
+        }
+
+        .timeline-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 15px;
+        }
+
+        .timeline-text {
+            font-size: 1.2em;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        /* CTA Section - Final conversion */
+        .cta-section {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #a855f7 100%);
+            flex-direction: column;
+        }
+
+        .cta-headline {
+            font-size: 4em;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .cta-subtext {
+            font-size: 1.5em;
+            text-align: center;
+            margin-bottom: 60px;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            background: #fbbf24;
+            color: #0f172a;
+            font-size: 1.8em;
+            font-weight: 800;
+            padding: 25px 60px;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 40px rgba(251, 191, 36, 0.4);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(251, 191, 36, 0.6);
+        }
+
+        .trust-badge {
+            margin-top: 40px;
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="section hero-section">
+        <div class="logo-container">
+            <img src="assets/yashus-logo.png" alt="Yashus" class="hero-logo">
+        </div>
+        <h1 class="hero-headline">The Future of Marketing is Here</h1>
+        <p class="hero-subtext">Where AI-powered insights meet human creativity to transform your business journey</p>
+        <div class="scroll-indicator">
+            <svg width="40" height="60" viewBox="0 0 40 60">
+                <rect x="10" y="10" width="20" height="40" rx="10" fill="none" stroke="#3b82f6" stroke-width="3"/>
+                <circle cx="20" cy="25" r="3" fill="#fbbf24">
+                    <animate attributeName="cy" from="25" to="35" dur="1.5s" repeatCount="indefinite"/>
+                </circle>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="section problem-section">
+        <div class="split-container">
+            <div class="split-left">
+                <svg class="problem-icon" viewBox="0 0 120 120">
+                    <circle cx="60" cy="60" r="50" fill="none" stroke="#ef4444" stroke-width="4"/>
+                    <path d="M 40 60 L 80 60 M 60 40 L 60 80" stroke="#ef4444" stroke-width="6" stroke-linecap="round"/>
+                </svg>
+                <h2 class="section-title">The Challenge Every Business Faces</h2>
+                <p class="section-text">
+                    In today's digital landscape, 87% of businesses struggle to connect data insights with actionable strategy. 
+                    The gap between having information and knowing what to do with it has never been wider.
+                </p>
+            </div>
+            <div class="split-right">
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <span class="stat-number">87%</span>
+                        <span class="stat-label">Lack Clear Strategy</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">62%</span>
+                        <span class="stat-label">Waste Ad Budget</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">3.5x</span>
+                        <span class="stat-label">Time to ROI</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">$47K</span>
+                        <span class="stat-label">Avg Lost Revenue</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="section solution-section">
+        <div class="ai-brain-container">
+            <svg class="ai-brain" viewBox="0 0 200 200">
+                <defs>
+                    <linearGradient id="brainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <circle cx="100" cy="100" r="80" fill="url(#brainGradient)" opacity="0.3"/>
+                <circle cx="100" cy="100" r="60" fill="none" stroke="url(#brainGradient)" stroke-width="3"/>
+                <circle cx="100" cy="100" r="40" fill="none" stroke="url(#brainGradient)" stroke-width="3"/>
+                <circle cx="100" cy="100" r="20" fill="url(#brainGradient)"/>
+                
+                <!-- Neural connections -->
+                <line x1="100" y1="60" x2="130" y2="40" stroke="#8b5cf6" stroke-width="2" opacity="0.6"/>
+                <line x1="100" y1="60" x2="70" y2="40" stroke="#8b5cf6" stroke-width="2" opacity="0.6"/>
+                <line x1="100" y1="140" x2="130" y2="160" stroke="#8b5cf6" stroke-width="2" opacity="0.6"/>
+                <line x1="100" y1="140" x2="70" y2="160" stroke="#8b5cf6" stroke-width="2" opacity="0.6"/>
+                <line x1="60" y1="100" x2="40" y2="100" stroke="#8b5cf6" stroke-width="2" opacity="0.6"/>
+                <line x1="140" y1="100" x2="160" y2="100" stroke="#8b5cf6" stroke-width="2" opacity="0.6"/>
+                
+                <!-- Nodes -->
+                <circle cx="130" cy="40" r="5" fill="#fbbf24"/>
+                <circle cx="70" cy="40" r="5" fill="#fbbf24"/>
+                <circle cx="130" cy="160" r="5" fill="#fbbf24"/>
+                <circle cx="70" cy="160" r="5" fill="#fbbf24"/>
+                <circle cx="40" cy="100" r="5" fill="#fbbf24"/>
+                <circle cx="160" cy="100" r="5" fill="#fbbf24"/>
+            </svg>
+        </div>
+        
+        <h2 class="solution-headline">AI That Understands Your Business</h2>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <span class="feature-icon">🎯</span>
+                <h3 class="feature-title">Smart Analysis</h3>
+                <p class="feature-text">AI processes 10,000+ data points to understand your unique market position</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">⚡</span>
+                <h3 class="feature-title">Real-Time Insights</h3>
+                <p class="feature-text">Watch as our AI generates actionable strategies while you answer 9 simple questions</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📊</span>
+                <h3 class="feature-title">Custom Roadmap</h3>
+                <p class="feature-text">Receive a tailored strategy with timeline, budget, and ROI projections</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Journey Section -->
+    <section class="section journey-section">
+        <h2 class="journey-headline">Your 10-Minute Transformation</h2>
+        
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3 class="timeline-title">01. Share Your Story</h3>
+                    <p class="timeline-text">Answer 9 questions about your business, challenges, and goals</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3 class="timeline-title">02. AI Analysis</h3>
+                    <p class="timeline-text">Our AI processes your answers against 500+ successful transformation patterns</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3 class="timeline-title">03. Live Insights</h3>
+                    <p class="timeline-text">Watch as AI generates customized strategies tailored to your industry</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-content">
+                    <h3 class="timeline-title">04. Your Roadmap</h3>
+                    <p class="timeline-text">Receive a comprehensive report with timeline, budget, and expected ROI</p>
+                </div>
+                <div class="timeline-dot"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section cta-section">
+        <h2 class="cta-headline">Ready to Transform Your Business?</h2>
+        <p class="cta-subtext">Join 500+ companies that discovered their path to growth</p>
+        <button class="cta-button">Start Your 10-Minute Journey</button>
+        <p class="trust-badge">✓ No commitment required  •  ✓ Instant results  •  ✓ Free comprehensive report</p>
+    </section>
+</body>
+</html>

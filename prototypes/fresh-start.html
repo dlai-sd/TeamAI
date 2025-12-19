@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Fresh Start | Yashus</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1e293b;
+            min-height: 100vh;
+            margin: 0;
+            padding: 5%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Logo strip - framed with curved corners */
+        .logo-strip {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 3px solid #3b82f6;
+            border-radius: 16px;
+            position: relative;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+            animation: moveToTop 1.5s ease-in-out 1s forwards;
+            opacity: 0;
+            z-index: 1000;
+        }
+
+        @keyframes moveToTop {
+            from { 
+                opacity: 0;
+                transform: translateY(200px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .yashus-logo {
+            max-height: 50px;
+            height: auto;
+        }
+
+        /* Content wrapper - holds left nav + main canvas */
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Left Navigation Pane */
+        .left-nav {
+            width: 20%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-item {
+            background: white;
+            border: 3px solid #3b82f6;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .nav-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+            border-color: #fbbf24;
+        }
+
+        .nav-item.active {
+            border-color: #fbbf24;
+            background: #fffbeb;
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .nav-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .nav-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .nav-caption {
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.4;
+        }
+
+        /* Main Canvas - framed with curved corners */
+        .main-canvas {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            flex: 1;
+            border: 3px solid #3b82f6;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5%;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+            transition: all 0.8s ease-in-out;
+        }
+
+        .main-canvas.assessment-mode {
+            display: flex;
+            padding: 0;
+        }
+
+        /* Content area - shows after animation */
+        .content-area {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            animation: fadeInContent 0.8s ease-in-out 2.5s forwards;
+            position: relative;
+        }
+
+        @keyframes fadeInContent {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px) scale(0.95);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Story card - 80% of available space */
+        .story-card {
+            width: 80%;
+            height: 80%;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            border-radius: 24px;
+            padding: 60px;
+            text-align: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+            position: absolute;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .story-card.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .story-headline {
+            font-size: 2.2em;
+            line-height: 1.3;
+            font-weight: 700;
+            margin-bottom: 40px;
+            letter-spacing: -0.02em;
+            color: #fbbf24;
+            text-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+        }
+
+        .story-graphic {
+            margin-bottom: 30px;
+        }
+
+        .story-description strong {
+            display: block;
+            font-size: 1.6em;
+            margin-bottom: 14px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: #ffffff;
+        }
+
+        .story-description p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            line-height: 1.6;
+            font-weight: 400;
+            color: #f3f4f6;
+        }
+
+        /* 3-Column Assessment Layout */
+        .assessment-layout {
+            display: none;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+        }
+
+        .assessment-layout.active {
+            display: flex;
+            animation: fadeIn 0.8s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Left Pane - 20% Guidance */
+        .left-guide {
+            width: 20%;
+            background: #f8fafc;
+            padding: 30px 20px;
+            border-right: 2px solid #e2e8f0;
+            overflow-y: auto;
+        }
+
+        .phase-badge {
+            background: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        .guide-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .guide-text {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Middle Pane - 50% Engagement */
+        .middle-canvas {
+            flex: 1;
+            background: white;
+            padding: 60px;
+            overflow-y: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .question-content {
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .question-title {
+            font-size: 2em;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 40px;
+        }
+
+        /* Right Pane - 30% Journey Map */
+        .right-journey {
+            width: 30%;
+            background: #f8fafc;
+            padding: 30px 20px;
+            border-left: 2px solid #e2e8f0;
+            overflow-y: auto;
+        }
+
+        .journey-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+
+        .milestone {
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .milestone.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1e40af;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo strip - full width at top -->
+    <div class="logo-strip">
+        <img src="assets/yashus-logo.png" alt="Yashus Digital Marketing" class="yashus-logo">
+    </div>
+
+    <!-- Content Wrapper: Left Nav + Main Canvas -->
+    <div class="content-wrapper">
+        <!-- Left Navigation Menu -->
+        <div class="left-nav">
+            <div class="nav-item active" data-card="1" onclick="navigateToCard(1)">
+                <span class="nav-icon">💬</span>
+                <div class="nav-title">Your Story</div>
+                <div class="nav-caption">Share your business journey</div>
+            </div>
+            <div class="nav-item" data-card="2" onclick="navigateToCard(2)">
+                <span class="nav-icon">🔍</span>
+                <div class="nav-title">Challenges</div>
+                <div class="nav-caption">Problems we'll solve together</div>
+            </div>
+            <div class="nav-item" data-card="3" onclick="navigateToCard(3)">
+                <span class="nav-icon">📊</span>
+                <div class="nav-title">Custom Report</div>
+                <div class="nav-caption">Your personalized roadmap</div>
+            </div>
+            <div class="nav-item" data-card="4" onclick="navigateToCard(4)">
+                <span class="nav-icon">✨</span>
+                <div class="nav-title">Our Legacy</div>
+                <div class="nav-caption">500+ transformations</div>
+            </div>
+        </div>
+
+        <!-- Main Canvas - framed with curved corners -->
+    <div class="main-canvas" id="mainCanvas">
+        <!-- Storytelling Cards Phase -->
+        <div class="content-area" id="contentArea">
+            <!-- Card 1 -->
+            <div class="story-card" data-card="1">
+                <div class="story-headline">We're eager to hear your story.</div>
+                <div class="story-graphic">
+                    <svg width="120" height="120" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="52" fill="white" opacity="0.2"/>
+                        <text x="60" y="75" font-size="60" text-anchor="middle" fill="white">💬</text>
+                    </svg>
+                </div>
+                <div class="story-description">
+                    <strong>You answer 9 questions</strong>
+                    <p>About your business, challenges, and goals</p>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="story-card" data-card="2">
+                <div class="story-headline">To solve your business challenges.</div>
+                <div class="story-graphic">
+                    <svg width="120" height="120" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="52" fill="white" opacity="0.2"/>
+                        <text x="60" y="75" font-size="60" text-anchor="middle" fill="white">🔍</text>
+                    </svg>
+                </div>
+                <div class="story-description">
+                    <strong>We analyze live</strong>
+                    <p>You see insights appear as we go</p>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="story-card" data-card="3">
+                <div class="story-headline">We're passionate and inspired to solve.</div>
+                <div class="story-graphic">
+                    <svg width="120" height="120" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="52" fill="white" opacity="0.2"/>
+                        <text x="60" y="75" font-size="60" text-anchor="middle" fill="white">📊</text>
+                    </svg>
+                </div>
+                <div class="story-description">
+                    <strong>You get a custom report</strong>
+                    <p>Roadmap, timeline, budget — delivered to your inbox</p>
+                </div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="story-card" data-card="4">
+                <div class="story-headline">This is our legacy — 500+ journeys transformed.</div>
+                <div class="story-graphic">
+                    <svg width="120" height="120" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="52" fill="white" opacity="0.2"/>
+                        <text x="60" y="75" font-size="60" text-anchor="middle" fill="white">✨</text>
+                    </svg>
+                </div>
+                <div class="story-description">
+                    <strong>No commitment needed</strong>
+                    <p>Just 10 minutes to discover your path forward</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3-Column Assessment Layout (hidden initially) -->
+        <div class="assessment-layout" id="assessmentLayout">
+            <!-- Left Pane: Guidance -->
+            <div class="left-guide">
+                <span class="phase-badge">Phase 1</span>
+                <h3 class="guide-title">Understanding Your Business</h3>
+                <p class="guide-text">
+                    We'll start by learning about what you do and who you serve. 
+                    This helps us tailor our insights specifically to your industry.
+                </p>
+            </div>
+
+            <!-- Middle Pane: Question Area -->
+            <div class="middle-canvas">
+                <div class="question-content">
+                    <h2 class="question-title">What do you sell & who do you serve?</h2>
+                    <!-- Question inputs will go here -->
+                </div>
+            </div>
+
+            <!-- Right Pane: Journey Map -->
+            <div class="right-journey">
+                <h3 class="journey-title">Your Journey</h3>
+                <div class="milestone active">1. Your Business</div>
+                <div class="milestone">2. Your Challenge</div>
+                <div class="milestone">3. Current Efforts</div>
+                <div class="milestone">4. Success Metrics</div>
+                <div class="milestone">5. Timeline</div>
+                <div class="milestone">6. Budget Range</div>
+                <div class="milestone">7. Decision Process</div>
+                <div class="milestone">8. Priorities</div>
+                <div class="milestone">9. Contact Info</div>
+            </div>
+        </div>
+    </div>
+    </div> <!-- Close content-wrapper -->
+
+    <script>
+        // Auto-rotate cards, then transition to assessment
+        let currentCard = 1;
+        const totalCards = 4;
+        let cardsCompleted = false;
+        let autoRotateInterval;
+
+        function showCard(cardNumber) {
+            document.querySelectorAll('.story-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.querySelector(`[data-card="${cardNumber}"]`).classList.add('active');
+            
+            // Update nav active state
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const activeNav = document.querySelector(`.nav-item[data-card="${cardNumber}"]`);
+            if (activeNav) {
+                activeNav.classList.add('active');
+            }
+        }
+
+        function navigateToCard(cardNumber) {
+            // Stop auto-rotation when user manually navigates
+            if (autoRotateInterval) {
+                clearInterval(autoRotateInterval);
+            }
+            cardsCompleted = true; // Prevent automatic assessment transition
+            currentCard = cardNumber;
+            showCard(cardNumber);
+        }
+
+        function nextCard() {
+            if (cardsCompleted) return;
+            
+            currentCard++;
+            if (currentCard > totalCards) {
+                // All cards shown, transition to assessment
+                cardsCompleted = true;
+                setTimeout(transitionToAssessment, 2000);
+            } else {
+                showCard(currentCard);
+            }
+        }
+
+        function transitionToAssessment() {
+            const contentArea = document.getElementById('contentArea');
+            const assessmentLayout = document.getElementById('assessmentLayout');
+            const mainCanvas = document.getElementById('mainCanvas');
+            const logoStrip = document.querySelector('.logo-strip');
+            
+            // Fade out cards
+            contentArea.style.opacity = '0';
+            contentArea.style.transform = 'scale(0.9)';
+            contentArea.style.transition = 'all 0.8s ease-in-out';
+            
+            // Shrink logo and move to minimal state
+            logoStrip.style.height = '60px';
+            logoStrip.style.transition = 'all 0.6s ease-in-out';
+            
+            setTimeout(() => {
+                contentArea.style.display = 'none';
+                assessmentLayout.classList.add('active');
+                mainCanvas.classList.add('assessment-mode');
+            }, 800);
+        }
+
+        // Show first card after initial animation
+        setTimeout(() => {
+            showCard(1);
+        }, 2500);
+
+        // Auto-advance every 4 seconds
+        autoRotateInterval = setInterval(nextCard, 4000);
+    </script>
+</body>
+</html>

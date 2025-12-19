@@ -1,0 +1,131 @@
+# GitHub Actions CI/CD Pipeline for Assessment Tool
+
+name: Deploy Assessment Tool
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assessment-tool/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'assessment-tool/**'
+
+jobs:
+  test-backend:
+    name: Test Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          cd assessment-tool/backend
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+      
+      - name: Run tests
+        run: |
+          cd assessment-tool/backend
+          pytest tests/ -v --cov=. --cov-report=xml
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./assessment-tool/backend/coverage.xml
+
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+      
+      - name: Install dependencies
+        run: |
+          cd assessment-tool/frontend-v1
+          npm ci
+      
+      - name: Build frontend
+        run: |
+          cd assessment-tool/frontend-v1
+          npm run build
+
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Login to Azure Container Registry
+        run: |
+          az acr login --name teamairegistry
+      
+      - name: Build and push backend
+        run: |
+          cd assessment-tool
+          docker build -f infrastructure/docker/Dockerfile.backend -t backend:${{ github.sha }} .
+          docker tag backend:${{ github.sha }} teamairegistry.azurecr.io/assessment-backend:latest
+          docker tag backend:${{ github.sha }} teamairegistry.azurecr.io/assessment-backend:${{ github.sha }}
+          docker push teamairegistry.azurecr.io/assessment-backend:latest
+          docker push teamairegistry.azurecr.io/assessment-backend:${{ github.sha }}
+      
+      - name: Build and push frontend
+        run: |
+          cd assessment-tool
+          docker build -f infrastructure/docker/Dockerfile.frontend -t frontend:${{ github.sha }} .
+          docker tag frontend:${{ github.sha }} teamairegistry.azurecr.io/assessment-frontend:latest
+          docker tag frontend:${{ github.sha }} teamairegistry.azurecr.io/assessment-frontend:${{ github.sha }}
+          docker push teamairegistry.azurecr.io/assessment-frontend:latest
+          docker push teamairegistry.azurecr.io/assessment-frontend:${{ github.sha }}
+      
+      - name: Deploy backend to Container Apps
+        run: |
+          az containerapp update \
+            --name assessment-backend \
+            --resource-group teamai-prod \
+            --image teamairegistry.azurecr.io/assessment-backend:${{ github.sha }}
+      
+      - name: Deploy frontend to Container Apps
+        run: |
+          az containerapp update \
+            --name assessment-frontend \
+            --resource-group teamai-prod \
+            --image teamairegistry.azurecr.io/assessment-frontend:${{ github.sha }}
+      
+      - name: Verify deployment
+        run: |
+          BACKEND_URL=$(az containerapp show \
+            --name assessment-backend \
+            --resource-group teamai-prod \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)
+          
+          echo "Testing backend health..."
+          curl -f https://$BACKEND_URL/health || exit 1
+          
+          echo "Deployment successful!"
+          echo "Backend: https://$BACKEND_URL"

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yashus Digital Marketing Maturity Assessment | AI-Powered Analysis</title>
+    <meta name="description" content="Discover your digital marketing maturity score with AI-powered assessment. Get personalized roadmap backed by statistical analysis.">
+    <link rel="stylesheet" href="css/professional.css">
+    <link rel="stylesheet" href="css/charts.css">
+    
+    <!-- JavaScript Dependencies -->
+    <script src="js/ai-orchestrator.js" defer></script>
+    <script src="js/statistical-engine.js" defer></script>
+    <script src="js/navigation.js" defer></script>
+    <script src="js/charts.js" defer></script>
+    <script src="js/app.js" defer></script>
+</head>
+<body>
+    <div id="app">
+        <!-- PHASE 1: DISCOVERY -->
+        
+        <!-- Pane 1: Professional Landing Page -->
+        <section id="pane-landing" class="pane active">
+            <div class="landing-hero">
+                <div class="container">
+                    <div class="hero-badge">Powered by AI + Statistical Science</div>
+                    <h1 class="hero-title">
+                        Discover Your <span class="gradient-text">Digital Marketing Maturity</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        10-minute AI-powered assessment. Personalized roadmap with statistical validation.
+                    </p>
+                    
+                    <div class="credibility-bar">
+                        <div class="stat-item">
+                            <div class="stat-value">10,000+</div>
+                            <div class="stat-label">Assessments</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">150+</div>
+                            <div class="stat-label">Agencies</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">92%</div>
+                            <div class="stat-label">Confidence</div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="navigateTo('pane-initial-sensing')" class="cta-primary">
+                        Begin Assessment
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M7 14L13 8L7 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    
+                    <div class="social-proof">
+                        <p class="proof-label">Trusted by leading brands</p>
+                        <div class="logo-grid">
+                            <!-- Placeholder for client logos -->
+                            <div class="client-logo">Client A</div>
+                            <div class="client-logo">Client B</div>
+                            <div class="client-logo">Client C</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Pane 2: Initial Sensing (AI Domain Detection) -->
+        <section id="pane-initial-sensing" class="pane">
+            <div class="assessment-container">
+                <div class="progress-header">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: 10%"></div>
+                    </div>
+                    <div class="progress-text">Step 1 of 10</div>
+                </div>
+                
+                <div class="question-card">
+                    <div class="question-number">Question 1</div>
+                    <h2 class="question-title">Tell us about your business</h2>
+                    <p class="question-hint">
+                        Help our AI understand your context. Describe your business in one sentence.
+                    </p>
+                    
+                    <form onsubmit="handleInitialSensing(event)" class="question-form">
+                        <div class="form-group">
+                            <textarea 
+                                id="business-description" 
+                                name="business-description"
+                                placeholder="Example: I run a dental clinic with 3 locations in Mumbai"
+                                rows="4"
+                                required
+                                maxlength="500"
+                            ></textarea>
+                            <div class="char-counter">0 / 500</div>
+                        </div>
+                        
+                        <div class="ai-status" id="ai-processing" style="display: none;">
+                            <div class="ai-pulse"></div>
+                            <span>AI analyzing your profile...</span>
+                        </div>
+                        
+                        <div class="button-row">
+                            <button type="button" onclick="navigateTo('pane-landing')" class="btn-secondary">
+                                Back
+                            </button>
+                            <button type="submit" class="btn-primary">
+                                Continue
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Pane 3: Progress Overview (Minimal Monopoly-style Journey Map) -->
+        <section id="pane-progress-overview" class="pane">
+            <div class="assessment-container">
+                <div class="overview-header">
+                    <h2>Your Assessment Journey</h2>
+                    <p>AI has identified 7 dimensions to evaluate. Click any dimension to begin.</p>
+                </div>
+                
+                <div class="journey-map">
+                    <div class="journey-start">
+                        <div class="milestone-dot completed">✓</div>
+                        <span>START</span>
+                    </div>
+                    
+                    <div class="dimension-node" data-dimension="strategy" onclick="navigateToDimension('strategy')">
+                        <div class="milestone-dot current">1</div>
+                        <span class="node-label">Strategy & Planning</span>
+                        <div class="node-score">— / 7</div>
+                    </div>
+                    
+                    <div class="dimension-node locked" data-dimension="technology">
+                        <div class="milestone-dot locked">2</div>
+                        <span class="node-label">Technology & Data</span>
+                        <div class="node-score">— / 7</div>
+                    </div>
+                    
+                    <div class="dimension-node locked" data-dimension="content">
+                        <div class="milestone-dot locked">3</div>
+                        <span class="node-label">Content & Creative</span>
+                        <div class="node-score">— / 7</div>
+                    </div>
+                    
+                    <div class="dimension-node locked" data-dimension="channels">
+                        <div class="milestone-dot locked">4</div>
+                        <span class="node-label">Channels & Media</span>
+                        <div class="node-score">— / 7</div>
+                    </div>
+                    
+                    <div class="dimension-node locked" data-dimension="skills">
+                        <div class="milestone-dot locked">5</div>
+                        <span class="node-label">Organization & Skills</span>
+                        <div class="node-score">— / 7</div>
+                    </div>
+                    
+                    <div class="dimension-node locked" data-dimension="measurement">
+                        <div class="milestone-dot locked">6</div>
+                        <span class="node-label">Measurement & Optimization</span>
+                        <div class="node-score">— / 7</div>
+                    </div>
+                    
+                    <div class="dimension-node locked" data-dimension="cx">
+                        <div class="milestone-dot locked">7</div>
+                        <span class="node-label">Customer Experience</span>
+                        <div class="node-score">— / 7</div>
+                    </div>
+                    
+                    <div class="journey-end">
+                        <div class="milestone-dot locked">★</div>
+                        <span>RESULTS</span>
+                    </div>
+                </div>
+                
+                <div class="overview-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="completed-dimensions">0</div>
+                        <div class="stat-label">Dimensions Assessed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="estimated-maturity">—</div>
+                        <div class="stat-label">Estimated Maturity</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="time-remaining">~8 min</div>
+                        <div class="stat-label">Time Remaining</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- PHASE 2: DEEP DIVE (7 DMMM Dimensions) -->
+        
+        <!-- Pane 4: Strategy & Planning -->
+        <section id="pane-dimension-strategy" class="pane dimension-pane">
+            <div class="assessment-container">
+                <div class="dimension-header">
+                    <button onclick="navigateTo('pane-progress-overview')" class="btn-back">
+                        ← Back to Overview
+                    </button>
+                    <div class="dimension-badge">Dimension 1 of 7</div>
+                    <h2 class="dimension-title">Strategy & Planning</h2>
+                    <p class="dimension-description">
+                        How systematically do you approach marketing planning and goal-setting?
+                    </p>
+                </div>
+                
+                <div id="questions-strategy" class="questions-container">
+                    <!-- AI-adaptive questions will be injected here -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Pane 5: Technology & Data -->
+        <section id="pane-dimension-technology" class="pane dimension-pane">
+            <div class="assessment-container">
+                <div class="dimension-header">
+                    <button onclick="navigateTo('pane-progress-overview')" class="btn-back">
+                        ← Back to Overview
+                    </button>
+                    <div class="dimension-badge">Dimension 2 of 7</div>
+                    <h2 class="dimension-title">Technology & Data</h2>
+                    <p class="dimension-description">
+                        What tools and data infrastructure power your marketing decisions?
+                    </p>
+                </div>
+                
+                <div id="questions-technology" class="questions-container">
+                    <!-- AI-adaptive questions -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Pane 6: Content & Creative -->
+        <section id="pane-dimension-content" class="pane dimension-pane">
+            <div class="assessment-container">
+                <div class="dimension-header">
+                    <button onclick="navigateTo('pane-progress-overview')" class="btn-back">
+                        ← Back to Overview
+                    </button>
+                    <div class="dimension-badge">Dimension 3 of 7</div>
+                    <h2 class="dimension-title">Content & Creative</h2>
+                    <p class="dimension-description">
+                        How do you create and manage content across channels?
+                    </p>
+                </div>
+                
+                <div id="questions-content" class="questions-container">
+                    <!-- AI-adaptive questions -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Pane 7: Channels & Media -->
+        <section id="pane-dimension-channels" class="pane dimension-pane">
+            <div class="assessment-container">
+                <div class="dimension-header">
+                    <button onclick="navigateTo('pane-progress-overview')" class="btn-back">
+                        ← Back to Overview
+                    </button>
+                    <div class="dimension-badge">Dimension 4 of 7</div>
+                    <h2 class="dimension-title">Channels & Media</h2>
+                    <p class="dimension-description">
+                        Which marketing channels do you actively use and optimize?
+                    </p>
+                </div>
+                
+                <div id="questions-channels" class="questions-container">
+                    <!-- AI-adaptive questions -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Pane 8: Organization & Skills -->
+        <section id="pane-dimension-skills" class="pane dimension-pane">
+            <div class="assessment-container">
+                <div class="dimension-header">
+                    <button onclick="navigateTo('pane-progress-overview')" class="btn-back">
+                        ← Back to Overview
+                    </button>
+                    <div class="dimension-badge">Dimension 5 of 7</div>
+                    <h2 class="dimension-title">Organization & Skills</h2>
+                    <p class="dimension-description">
+                        How is your marketing team structured and skilled?
+                    </p>
+                </div>
+                
+                <div id="questions-skills" class="questions-container">
+                    <!-- AI-adaptive questions -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Pane 9: Measurement & Optimization -->
+        <section id="pane-dimension-measurement" class="pane dimension-pane">
+            <div class="assessment-container">
+                <div class="dimension-header">
+                    <button onclick="navigateTo('pane-progress-overview')" class="btn-back">
+                        ← Back to Overview
+                    </button>
+                    <div class="dimension-badge">Dimension 6 of 7</div>
+                    <h2 class="dimension-title">Measurement & Optimization</h2>
+                    <p class="dimension-description">
+                        How do you measure and improve marketing performance?
+                    </p>
+                </div>
+                
+                <div id="questions-measurement" class="questions-container">
+                    <!-- AI-adaptive questions -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Pane 10: Customer Experience -->
+        <section id="pane-dimension-cx" class="pane dimension-pane">
+            <div class="assessment-container">
+                <div class="dimension-header">
+                    <button onclick="navigateTo('pane-progress-overview')" class="btn-back">
+                        ← Back to Overview
+                    </button>
+                    <div class="dimension-badge">Dimension 7 of 7</div>
+                    <h2 class="dimension-title">Customer Experience</h2>
+                    <p class="dimension-description">
+                        How do you manage the end-to-end customer journey?
+                    </p>
+                </div>
+                
+                <div id="questions-cx" class="questions-container">
+                    <!-- AI-adaptive questions -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- PHASE 3: RESULTS & ROADMAP -->
+        
+        <!-- Pane 11: Maturity Score Dashboard -->
+        <section id="pane-results-score" class="pane">
+            <div class="results-container">
+                <div class="results-header">
+                    <div class="completion-badge">✓ Assessment Complete</div>
+                    <h1>Your Digital Marketing Maturity Score</h1>
+                    <p class="results-subtitle">
+                        Based on analysis of <span id="data-points-count">12</span> data points with 
+                        <span id="confidence-level">92%</span> statistical confidence
+                    </p>
+                </div>
+                
+                <div class="score-card-large">
+                    <div class="score-value" id="overall-score">4.2</div>
+                    <div class="score-max">/ 7</div>
+                    <div class="score-label">Digital Marketing Maturity</div>
+                    
+                    <div class="benchmark-comparison">
+                        <div class="benchmark-item">
+                            <span class="benchmark-label">Industry Average:</span>
+                            <span class="benchmark-value" id="industry-avg">3.8</span>
+                        </div>
+                        <div class="benchmark-result positive">
+                            You're performing <strong id="percentile-rank">68th percentile</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dimension-breakdown">
+                    <h3>Dimension Breakdown</h3>
+                    <div class="spider-chart-container">
+                        <canvas id="spider-chart" width="500" height="500"></canvas>
+                    </div>
+                    
+                    <div class="dimension-scores-list">
+                        <div class="dimension-score-item">
+                            <span class="dimension-name">Strategy & Planning</span>
+                            <div class="score-bar-container">
+                                <div class="score-bar" style="width: 74%"></div>
+                            </div>
+                            <span class="dimension-score">5.2 / 7</span>
+                        </div>
+                        <div class="dimension-score-item">
+                            <span class="dimension-name">Technology & Data</span>
+                            <div class="score-bar-container">
+                                <div class="score-bar" style="width: 54%"></div>
+                            </div>
+                            <span class="dimension-score">3.8 / 7</span>
+                        </div>
+                        <div class="dimension-score-item">
+                            <span class="dimension-name">Content & Creative</span>
+                            <div class="score-bar-container">
+                                <div class="score-bar" style="width: 64%"></div>
+                            </div>
+                            <span class="dimension-score">4.5 / 7</span>
+                        </div>
+                        <div class="dimension-score-item">
+                            <span class="dimension-name">Channels & Media</span>
+                            <div class="score-bar-container">
+                                <div class="score-bar" style="width: 57%"></div>
+                            </div>
+                            <span class="dimension-score">4.0 / 7</span>
+                        </div>
+                        <div class="dimension-score-item">
+                            <span class="dimension-name">Organization & Skills</span>
+                            <div class="score-bar-container">
+                                <div class="score-bar" style="width: 49%"></div>
+                            </div>
+                            <span class="dimension-score">3.4 / 7</span>
+                        </div>
+                        <div class="dimension-score-item">
+                            <span class="dimension-name">Measurement & Optimization</span>
+                            <div class="score-bar-container">
+                                <div class="score-bar" style="width: 60%"></div>
+                            </div>
+                            <span class="dimension-score">4.2 / 7</span>
+                        </div>
+                        <div class="dimension-score-item">
+                            <span class="dimension-name">Customer Experience</span>
+                            <div class="score-bar-container">
+                                <div class="score-bar" style="width: 66%"></div>
+                            </div>
+                            <span class="dimension-score">4.6 / 7</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="statistical-validation">
+                    <h4>Statistical Validation</h4>
+                    <div class="validation-grid">
+                        <div class="validation-item">
+                            <div class="validation-label">Confidence Level</div>
+                            <div class="validation-value">92%</div>
+                        </div>
+                        <div class="validation-item">
+                            <div class="validation-label">P-Value</div>
+                            <div class="validation-value">p < 0.01</div>
+                        </div>
+                        <div class="validation-item">
+                            <div class="validation-label">Sample Size</div>
+                            <div class="validation-value">N = 1,247</div>
+                        </div>
+                        <div class="validation-item">
+                            <div class="validation-label">Model</div>
+                            <div class="validation-value">Ridge Regression</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="navigateTo('pane-results-roadmap')" class="cta-primary">
+                    View Personalized Roadmap
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M7 14L13 8L7 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+        
+        <!-- Pane 12: AI-Generated Roadmap -->
+        <section id="pane-results-roadmap" class="pane">
+            <div class="results-container">
+                <button onclick="navigateTo('pane-results-score')" class="btn-back">
+                    ← Back to Score
+                </button>
+                
+                <div class="roadmap-header">
+                    <h1>Your Personalized Marketing Roadmap</h1>
+                    <p class="roadmap-subtitle">
+                        AI-generated recommendations backed by statistical analysis
+                    </p>
+                </div>
+                
+                <!-- SWOT Analysis -->
+                <div class="swot-container">
+                    <h3>SWOT Analysis</h3>
+                    <div class="swot-grid">
+                        <div class="swot-card strengths">
+                            <div class="swot-header">Strengths</div>
+                            <div id="swot-strengths">
+                                <!-- AI-generated content -->
+                            </div>
+                        </div>
+                        <div class="swot-card weaknesses">
+                            <div class="swot-header">Weaknesses</div>
+                            <div id="swot-weaknesses">
+                                <!-- AI-generated content -->
+                            </div>
+                        </div>
+                        <div class="swot-card opportunities">
+                            <div class="swot-header">Opportunities</div>
+                            <div id="swot-opportunities">
+                                <!-- AI-generated content -->
+                            </div>
+                        </div>
+                        <div class="swot-card threats">
+                            <div class="swot-header">Threats</div>
+                            <div id="swot-threats">
+                                <!-- AI-generated content -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3-Phase Implementation Plan -->
+                <div class="implementation-plan">
+                    <h3>3-Phase Implementation Plan</h3>
+                    
+                    <div class="phase-card">
+                        <div class="phase-header">
+                            <div class="phase-number">Phase 1</div>
+                            <div class="phase-timeline">Months 1-3</div>
+                        </div>
+                        <h4>Establish Digital Foundation</h4>
+                        <div class="phase-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Recommended Agents:</span>
+                                <span class="detail-value">WebsiteBuilder, LocalSEO</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Expected Impact:</span>
+                                <span class="detail-value">+35 new leads/month</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Investment:</span>
+                                <span class="detail-value">₹25,000/month</span>
+                            </div>
+                            <div class="confidence-badge high">High Confidence</div>
+                            <p class="phase-description">
+                                Based on analysis of 47 similar businesses in Healthcare sector
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="phase-card">
+                        <div class="phase-header">
+                            <div class="phase-number">Phase 2</div>
+                            <div class="phase-timeline">Months 4-6</div>
+                        </div>
+                        <h4>Amplify Reach & Engagement</h4>
+                        <div class="phase-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Recommended Agents:</span>
+                                <span class="detail-value">SocialMedia, ContentBot</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Expected Impact:</span>
+                                <span class="detail-value">+50 new leads/month</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Investment:</span>
+                                <span class="detail-value">₹35,000/month</span>
+                            </div>
+                            <div class="confidence-badge medium">Medium Confidence</div>
+                            <p class="phase-description">
+                                Requires Phase 1 completion. ROI: 2.8x ± 0.6x (95% CI)
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="phase-card">
+                        <div class="phase-header">
+                            <div class="phase-number">Phase 3</div>
+                            <div class="phase-timeline">Months 7-12</div>
+                        </div>
+                        <h4>Optimize & Scale</h4>
+                        <div class="phase-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Recommended Agents:</span>
+                                <span class="detail-value">InsightBot, TrustBuilder</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Expected Impact:</span>
+                                <span class="detail-value">+80 new leads/month</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Investment:</span>
+                                <span class="detail-value">₹50,000/month</span>
+                            </div>
+                            <div class="confidence-badge medium">Medium Confidence</div>
+                            <p class="phase-description">
+                                Market conditions may vary. Continuous optimization required
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ROI Projections -->
+                <div class="roi-projections">
+                    <h3>ROI Projections</h3>
+                    <div class="roi-chart-container">
+                        <canvas id="roi-chart" width="800" height="400"></canvas>
+                    </div>
+                    <div class="roi-summary">
+                        <div class="roi-metric">
+                            <div class="roi-label">Expected 12-Month ROI</div>
+                            <div class="roi-value">3.2x ± 0.8x</div>
+                            <div class="roi-confidence">95% Confidence Interval</div>
+                        </div>
+                        <div class="roi-metric">
+                            <div class="roi-label">Payback Period</div>
+                            <div class="roi-value">4-6 months</div>
+                            <div class="roi-confidence">Based on historical data</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CTA Section -->
+                <div class="cta-section">
+                    <h3>Ready to Transform Your Marketing?</h3>
+                    <p>Get your personalized report and speak with a marketing strategist</p>
+                    
+                    <form onsubmit="handleEmailSubmit(event)" class="email-capture-form">
+                        <div class="form-row">
+                            <input 
+                                type="email" 
+                                id="user-email" 
+                                placeholder="Enter your email"
+                                required
+                            />
+                            <button type="submit" class="cta-primary">
+                                Get Full Report
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="cta-secondary-actions">
+                        <button onclick="downloadPDF()" class="btn-secondary">
+                            Download PDF
+                        </button>
+                        <button onclick="shareResults()" class="btn-secondary">
+                            Share Results
+                        </button>
+                        <button onclick="bookCall()" class="btn-secondary">
+                            Book Strategy Call
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="js/ai-orchestrator.js"></script>
+    <script src="js/statistical-engine.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

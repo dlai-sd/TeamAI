@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yashus WoW - AI-Powered Marketing Assessment</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/monopoly.css">
+    <link rel="stylesheet" href="css/wizard.css">
+</head>
+<body>
+    <!-- SPA Container -->
+    <div id="app">
+        <!-- Pane 1: Landing Page -->
+        <section id="pane-landing" class="pane active">
+            <div class="landing-container">
+                <div class="logo-section">
+                    <h1 class="brand">Yashus <span class="wow">WoW</span></h1>
+                    <p class="tagline">Ways of Working powered by AI</p>
+                </div>
+                
+                <div class="hero-content">
+                    <h2 class="hero-title">Transform Your Marketing with AI-Powered Intelligence</h2>
+                    <p class="hero-subtitle">9-step journey to marketing excellence. Personalized insights in 10 minutes.</p>
+                    
+                    <div class="value-grid">
+                        <div class="value-card">
+                            <span class="value-icon">🎯</span>
+                            <h3>AI-Driven Analysis</h3>
+                            <p>Groq-powered insights from 500+ success stories</p>
+                        </div>
+                        <div class="value-card">
+                            <span class="value-icon">📊</span>
+                            <h3>Statistical Modeling</h3>
+                            <p>Monte Carlo simulations & regression analysis</p>
+                        </div>
+                        <div class="value-card">
+                            <span class="value-icon">🚀</span>
+                            <h3>Actionable Roadmap</h3>
+                            <p>Prioritized recommendations tailored to you</p>
+                        </div>
+                    </div>
+                    
+                    <button class="cta-button" onclick="navigateTo('pane-monopoly')">
+                        Start Your Journey
+                        <span class="arrow">→</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pane 2: Monopoly Board -->
+        <section id="pane-monopoly" class="pane">
+            <div class="monopoly-container">
+                <button class="back-button" onclick="navigateTo('pane-landing')">← Back</button>
+                
+                <h2 class="board-title">Your 9-Step Marketing Excellence Journey</h2>
+                <p class="board-subtitle">Click any milestone to begin your assessment</p>
+                
+                <div class="monopoly-board">
+                    <!-- Corner: Start -->
+                    <div class="board-corner start-corner">
+                        <span class="corner-icon">🏁</span>
+                        <span class="corner-label">START</span>
+                    </div>
+                    
+                    <!-- Top Edge -->
+                    <div class="board-property" data-milestone="1" onclick="navigateTo('pane-milestone-1')">
+                        <div class="property-header milestone-1-color"></div>
+                        <div class="property-content">
+                            <span class="property-icon">🏢</span>
+                            <span class="property-name">Define Foundation</span>
+                            <span class="property-number">1</span>
+                        </div>
+                    </div>
+                    <div class="board-property" data-milestone="2" onclick="navigateTo('pane-milestone-2')">
+                        <div class="property-header milestone-2-color"></div>
+                        <div class="property-content">
+                            <span class="property-icon">🎯</span>
+                            <span class="property-name">Pinpoint Challenges</span>
+                            <span class="property-number">2</span>
+                        </div>
+                    </div>
+                    <div class="board-property" data-milestone="3" onclick="navigateTo('pane-milestone-3')">
+                        <div class="property-header milestone-3-color"></div>
+                        <div class="property-content">
+                            <span class="property-icon">🔍</span>
+                            <span class="property-name">Review Past Efforts</span>
+                            <span class="property-number">3</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Corner: Top Right -->
+                    <div class="board-corner">
+                        <span class="corner-icon">💡</span>
+                        <span class="corner-label">INSIGHTS</span>
+                    </div>
+                    
+                    <!-- Right Edge -->
+                    <div class="board-property" data-milestone="4" onclick="navigateTo('pane-milestone-4')">
+                        <div class="property-header milestone-4-color"></div>
+                        <div class="property-content">
+                            <span class="property-icon">🎯</span>
+                            <span class="property-name">Envision Goals</span>
+                            <span class="property-number">4</span>
+                        </div>
+                    </div>
+                    <div class="board-property" data-milestone="5" onclick="navigateTo('pane-milestone-5')">
+                        <div class="property-header milestone-5-color"></div>
+                        <div class="property-content">
+                            <span class="property-icon">🏆</span>
+                            <span class="property-name">Understand Market</span>
+                            <span class="property-number">5</span>
+                        </div>
+                    </div>
+                    <div class="board-property" data-milestone="6" onclick="navigateTo('pane-milestone-6')">
+                        <div class="property-header milestone-6-color"></div>
+                        <div class="property-content">
+                            <span class="property-icon">⏱️</span>
+                            <span class="property-name">Set Timeline</span>
+                            <span class="property-number">6</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Corner: Bottom Right -->
+                    <div class="board-corner">
+                        <span class="corner-icon">📊</span>
+                        <span class="corner-label">ANALYSIS</span>
+                    </div>
+                    
+                    <!-- Bottom Edge -->
+                    <div class="board-property" data-milestone="7" onclick="navigateTo('pane-milestone-7')">
+                        <div class="property-header milestone-7-color"></div>
+                        <div class="property-content">
+                            <span class="property-icon">💰</span>
+                            <span class="property-name">Align Budget</span>
+                            <span class="property-number">7</span>
+                        </div>
+                    </div>
+                    <div class="board-property" data-milestone="8" onclick="navigateTo('pane-milestone-8')">
+                        <div class="property-header milestone-8-color"></div>
+                        <div class="property-content">
+                            <span class="property-icon">👥</span>
+                            <span class="property-name">Map Stakeholders</span>
+                            <span class="property-number">8</span>
+                        </div>
+                    </div>
+                    <div class="board-property" data-milestone="9" onclick="navigateTo('pane-milestone-9')">
+                        <div class="property-header milestone-9-color"></div>
+                        <div class="property-content">
+                            <span class="property-icon">🗺️</span>
+                            <span class="property-name">Get Roadmap</span>
+                            <span class="property-number">9</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Corner: Bottom Left / Finish -->
+                    <div class="board-corner finish-corner">
+                        <span class="corner-icon">🎉</span>
+                        <span class="corner-label">FINISH</span>
+                    </div>
+                    
+                    <!-- Center Logo -->
+                    <div class="board-center">
+                        <div class="center-logo">
+                            <span class="wow-large">WoW</span>
+                            <span class="yashus-small">Yashus</span>
+                        </div>
+                        <div class="progress-indicator">
+                            <span class="progress-text">0/9 Complete</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Panes 3-11: Milestone Forms -->
+        <section id="pane-milestone-1" class="pane milestone-pane">
+            <div class="milestone-container">
+                <button class="back-button" onclick="navigateTo('pane-monopoly')">← Back to Board</button>
+                
+                <div class="milestone-header">
+                    <span class="milestone-number">1/9</span>
+                    <h2 class="milestone-title">🏢 Define Your Foundation</h2>
+                    <p class="milestone-description">Tell us about your business and what you sell</p>
+                </div>
+                
+                <form class="milestone-form" onsubmit="submitMilestone(event, 1)">
+                    <div class="form-group">
+                        <label for="m1-industry">What industry are you in?</label>
+                        <select id="m1-industry" required>
+                            <option value="">Select your industry</option>
+                            <option value="ecommerce">E-commerce</option>
+                            <option value="saas">SaaS</option>
+                            <option value="consulting">Consulting</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="finance">Finance</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="m1-product">Describe your main product/service (100 words max)</label>
+                        <textarea id="m1-product" rows="4" maxlength="500" required placeholder="What do you offer to customers?"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="m1-target">Who is your target audience?</label>
+                        <input type="text" id="m1-target" required placeholder="e.g., B2B tech companies, consumers 25-45">
+                    </div>
+                    
+                    <button type="submit" class="next-button">
+                        Continue to Next Milestone
+                        <span class="arrow">→</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Milestone 2-9 (similar structure, different questions) -->
+        <!-- Will be generated dynamically for brevity -->
+
+        <!-- Pane 12: Dashboard -->
+        <section id="pane-dashboard" class="pane">
+            <div class="dashboard-container">
+                <button class="back-button" onclick="navigateTo('pane-monopoly')">← Back to Board</button>
+                
+                <div class="dashboard-header">
+                    <h2 class="dashboard-title">Your Personalized Marketing Roadmap</h2>
+                    <p class="dashboard-subtitle">AI-powered insights based on your responses</p>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <!-- AI Insights Section -->
+                    <div class="dashboard-card">
+                        <h3 class="card-title">🤖 AI Analysis</h3>
+                        <div id="ai-insights" class="insights-content">
+                            <div class="loading-spinner"></div>
+                            <p>Analyzing your responses with Groq AI...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistical Analysis -->
+                    <div class="dashboard-card">
+                        <h3 class="card-title">📊 Market Benchmarks</h3>
+                        <div id="stats-chart" class="chart-container"></div>
+                    </div>
+                    
+                    <!-- Recommended Actions -->
+                    <div class="dashboard-card full-width">
+                        <h3 class="card-title">🎯 Prioritized Roadmap</h3>
+                        <div id="roadmap-list" class="roadmap-items"></div>
+                    </div>
+                </div>
+                
+                <!-- Email Capture Form -->
+                <div class="email-capture">
+                    <h3>Get Your Full Report</h3>
+                    <p>Receive detailed analysis, competitor insights, and implementation timeline</p>
+                    <form onsubmit="submitEmail(event)" class="email-form">
+                        <input type="email" id="user-email" placeholder="Enter your email" required>
+                        <button type="submit" class="submit-email-button">Send My Report</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/wizard.js"></script>
+    <script src="js/monopoly.js"></script>
+</body>
+</html>

@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Marketing Journey | TeamAI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            min-height: calc(100vh - 40px);
+            overflow: hidden;
+        }
+
+        /* Left: Conversation Area */
+        .conversation-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+        }
+
+        .conversation-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 40px;
+        }
+
+        .conversation-header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .conversation-header p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .conversation-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .conversation-stage {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .conversation-stage.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stage-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stage-icon {
+            font-size: 36px;
+        }
+
+        .stage-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-family: inherit;
+            min-height: 120px;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-top: 20px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .empathy-box {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe6e6 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #fbbf24;
+        }
+
+        .empathy-box h4 {
+            font-size: 16px;
+            color: #d97706;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .empathy-box p {
+            font-size: 14px;
+            color: #92400e;
+            line-height: 1.6;
+        }
+
+        .pattern-grid {
+            display: grid;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .pattern-card {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pattern-card:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .pattern-card.selected {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .pattern-icon {
+            font-size: 24px;
+        }
+
+        .pattern-text {
+            flex: 1;
+            font-size: 15px;
+            color: #2c3e50;
+        }
+
+        .pattern-check {
+            font-size: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .pattern-card.selected .pattern-check {
+            opacity: 1;
+        }
+
+        .insight-box {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .insight-box h4 {
+            font-size: 16px;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .insight-box p {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        /* Visual Charts Carousel */
+        #visualInsights {
+            position: relative;
+            min-height: 500px;
+        }
+
+        .visual-chart {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-left: 4px solid #667eea;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.5s ease;
+            pointer-events: none;
+        }
+
+        .visual-chart.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+            position: relative;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .chart-icon {
+            font-size: 28px;
+        }
+
+        .chart-title {
+            flex: 1;
+        }
+
+        .chart-title h3 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .chart-title p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .chart-canvas {
+            margin: 20px 0;
+        }
+
+        .chart-empathy {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe6e6 100%);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #92400e;
+            line-height: 1.6;
+            border-left: 3px solid #fbbf24;
+            margin-top: 20px;
+        }
+
+        .chart-empathy strong {
+            color: #d97706;
+        }
+
+        .carousel-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .carousel-nav button {
+            padding: 12px 24px;
+            font-size: 14px;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            margin: 0;
+        }
+
+        .carousel-nav button:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+        }
+
+        .carousel-nav button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .carousel-dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .carousel-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-dot.active {
+            background: #667eea;
+            width: 24px;
+            border-radius: 5px;
+        }
+
+        /* Right: Journey Map */
+        .journey-map {
+            width: 420px;
+            background: #f8f9fa;
+            border-left: 2px solid #e0e0e0;
+            padding: 30px 25px;
+            overflow-y: auto;
+        }
+
+        .journey-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .journey-header h2 {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .journey-header p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .journey-progress {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .progress-ring {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            position: relative;
+        }
+
+        .progress-circle {
+            transform: rotate(-90deg);
+        }
+
+        .progress-circle-bg {
+            fill: none;
+            stroke: #e0e0e0;
+            stroke-width: 8;
+        }
+
+        .progress-circle-fill {
+            fill: none;
+            stroke: url(#progressGradient);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            font-weight: 900;
+            color: #667eea;
+        }
+
+        .progress-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .journey-stages {
+            position: relative;
+        }
+
+        .journey-line {
+            position: absolute;
+            left: 29px;
+            top: 40px;
+            bottom: 40px;
+            width: 3px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .stage-item {
+            position: relative;
+            margin-bottom: 25px;
+            padding-left: 70px;
+            min-height: 60px;
+            z-index: 1;
+        }
+
+        .stage-marker {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: white;
+            border: 3px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .stage-item.completed .stage-marker {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #10b981;
+            color: white;
+        }
+
+        .stage-item.active .stage-marker {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 0 0 6px rgba(102, 126, 234, 0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 6px rgba(102, 126, 234, 0.2); }
+            50% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0.1); }
+        }
+
+        .stage-item.upcoming .stage-marker {
+            opacity: 0.4;
+        }
+
+        .stage-content {
+            padding-top: 5px;
+        }
+
+        .stage-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stage-item.upcoming .stage-name {
+            color: #999;
+        }
+
+        .stage-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .stage-item.upcoming .stage-description {
+            color: #aaa;
+        }
+
+        .stage-status {
+            display: inline-block;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .stage-item.completed .stage-status {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .stage-item.active .stage-status {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .stage-item.upcoming .stage-status {
+            background: #f3f4f6;
+            color: #9ca3af;
+        }
+
+        .journey-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .journey-footer p {
+            font-size: 12px;
+            color: #666;arousel -->
+                    <div id="visualInsights">
+                        <!-- Charts will be dynamically inserted here -->
+                    </div>
+
+                    <div class="carousel-nav">
+                        <button id="prevChart" disabled>← Previous Insight</button>
+                        <div class="carousel-dots" id="carouselDots"></div>
+                        <button id="nextChart">Next Insight →</button
+
+        .journey-footer strong {
+            color: #667eea;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .journey-map {
+                width: 100%;
+                border-left: none;
+                border-top: 2px solid #e0e0e0;
+                max-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left: Conversation Area -->
+        <div class="conversation-area">
+            <div class="conversation-header">
+                <h1>🤝 Let's Understand Your Business Journey</h1>
+                <p>A collaborative conversation to map your path to success</p>
+            </div>
+
+            <div class="conversation-content">
+                <!-- Stage 1: Understand Business -->
+                <div class="conversation-stage active" id="stage1">
+                    <div class="stage-title">
+                        <span class="stage-icon">🏢</span>
+                        <span>Tell me about your business</span>
+                    </div>
+                    <div class="stage-subtitle">
+                        This helps me understand your world - no jargon, just a simple description of what you do and where you operate.
+                    </div>
+
+                    <textarea 
+                        id="businessInput" 
+                        placeholder="Example: I run a dental clinic with 3 locations in Mumbai. We've been around for 8 years and mostly rely on word-of-mouth..."
+                    ></textarea>
+
+                    <div class="empathy-box">
+                        <h4><span>💡</span> Why this matters</h4>
+                        <p>
+                            I'm not here to quiz you. I want to understand your business context so I can show you 
+                            what others in your situation are facing and what's actually working for them.
+                        </p>
+                    </div>
+
+                    <button id="continueBtn1" disabled>Continue Our Conversation →</button>
+                </div>
+
+                <!-- Stage 2: Landscape Study -->
+                <div class="conversation-stage" id="stage2">
+                    <div class="stage-title">
+                        <span class="stage-icon">🗺️</span>
+                        <span>Let me paint the landscape for you</span>
+                    </div>
+                    <div class="stage-subtitle">
+                        Based on "<strong id="businessEcho"></strong>", here's what's really happening in your world...
+                    </div>
+
+                    <!-- Visual charts container -->
+                    <div id="visualInsights">
+                        <!-- Charts will be dynamically inserted here -->
+                    </div>
+
+                    <div class="empathy-box">
+                        <h4><span>🎯</span> Let me guess your challenges</h4>
+                        <p id="empathyText">
+                            I've worked with <strong id="matchCountText">47 similar businesses</strong>. 
+                            Here's what they struggle with - tap the ones that sound familiar:
+                        </p>
+                    </div>
+
+                    <div class="pattern-grid" id="challengeGrid">
+                        <!-- Challenges inserted here -->
+                    </div>
+
+                    <button id="continueBtn2" disabled>Yes, that's me! Continue →</button>
+                </div>
+
+                <!-- Stage 3: Profiling -->
+                <div class="conversation-stage" id="stage3">
+                    <div class="stage-title">
+                        <span class="stage-icon">📊</span>
+                        <span>Your digital health snapshot</span>
+                    </div>
+                    <div class="stage-subtitle">
+                        You selected <strong id="selectedCount">0</strong> challenges. 
+                        This tells me a lot. Let me show you where you stand compared to others.
+                    </div>
+
+                    <div class="insight-box">
+                        <h4>🎯 Pattern Detected</h4>
+                        <p id="profileInsight"></p>
+                    </div>
+
+                    <div class="empathy-box">
+                        <h4><span>✨</span> You're not alone</h4>
+                        <p id="normalizationText">
+                            This pattern appears in 78% of businesses at your stage. 
+                            The good news? It's completely fixable, and I'll show you exactly how.
+                        </p>
+                    </div>
+
+                    <button id="continueBtn3">Show Me the Success Path →</button>
+                </div>
+
+                <!-- Stage 4: Success Factors -->
+                <div class="conversation-stage" id="stage4">
+                    <div class="stage-title">
+                        <span class="stage-icon">🎯</span>
+                        <span>What makes businesses like yours succeed</span>
+                    </div>
+                    <div class="stage-subtitle">
+                        I've tracked <strong>156 businesses</strong> with your profile. 
+                        Here's what the successful ones did differently.
+                    </div>
+
+                    <div class="insight-box">
+                        <h4>🔑 Key Success Factors</h4>
+                        <p id="successFactors"></p>
+                    </div>
+
+                    <div class="empathy-box">
+                        <h4><span>📈</span> Real Success Story</h4>
+                        <p id="successStory"></p>
+                    </div>
+
+                    <button id="continueBtn4">Build My Success Path →</button>
+                </div>
+
+                <!-- Stage 5: Deriving Path -->
+                <div class="conversation-stage" id="stage5">
+                    <div class="stage-title">
+                        <span class="stage-icon">🛤️</span>
+                        <span>Your personalized roadmap</span>
+                    </div>
+                    <div class="stage-subtitle">
+                        Based on everything we've discussed, here's your 6-month journey to get 
+                        where you want to be.
+                    </div>
+
+                    <div id="roadmapContent">
+                        <!-- Roadmap phases inserted here -->
+                    </div>
+
+                    <button id="continueBtn5">Set My Goals & Metrics →</button>
+                </div>
+
+                <!-- Stage 6: Goals -->
+                <div class="conversation-stage" id="stage6">
+                    <div class="stage-title">
+                        <span class="stage-icon">🎯</span>
+                        <span>What does success look like for you?</span>
+                    </div>
+                    <div class="stage-subtitle">
+                        Let's set realistic, measurable goals for the next 6 months.
+                    </div>
+
+                    <div class="insight-box">
+                        <h4>📊 Realistic Projections</h4>
+                        <p id="projections"></p>
+                    </div>
+
+                    <button id="continueBtn6">See Investment Plan →</button>
+                </div>
+
+                <!-- Stage 7: Investment -->
+                <div class="conversation-stage" id="stage7">
+                    <div class="stage-title">
+                        <span class="stage-icon">💰</span>
+                        <span>What will this take?</span>
+                    </div>
+                    <div class="stage-subtitle">
+                        Transparent pricing with expected ROI at each phase.
+                    </div>
+
+                    <div id="investmentContent">
+                        <!-- Investment details inserted here -->
+                    </div>
+
+                    <button id="continueBtn7">Ready to Partner with Yashus →</button>
+                </div>
+
+                <!-- Stage 8: Partnership -->
+                <div class="conversation-stage" id="stage8">
+                    <div class="stage-title">
+                        <span class="stage-icon">🤝</span>
+                        <span>How we'll work together</span>
+                    </div>
+                    <div class="stage-subtitle">
+                        Here's what partnering with Yashus looks like month-to-month.
+                    </div>
+
+                    <div class="insight-box">
+                        <h4>👥 Your Dedicated Team</h4>
+                        <p id="teamInfo"></p>
+                    </div>
+
+                    <button id="continueBtn8">Schedule My Strategy Session →</button>
+                </div>
+
+                <!-- Stage 9: Final -->
+                <div class="conversation-stage" id="stage9">
+                    <div class="stage-title">
+                        <span class="stage-icon">📋</span>
+                        <span>Your complete assessment is ready!</span>
+                    </div>
+                    <div class="stage-subtitle">
+                        We've covered a lot together. Here's what happens next.
+                    </div>
+
+                    <div class="empathy-box">
+                        <h4><span>🎉</span> What you've unlocked</h4>
+                        <p>
+                            ✓ Industry landscape analysis<br>
+                            ✓ Your business profile vs. benchmarks<br>
+                            ✓ Personalized 6-month roadmap<br>
+                            ✓ ROI projections with confidence intervals<br>
+                            ✓ Investment breakdown<br>
+                            ✓ Partnership framework
+                        </p>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; margin-top: 30px;">
+                        <button style="flex: 1;">📥 Download Full Report</button>
+                        <button style="flex: 1;">📅 Book Strategy Call</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Journey Map -->
+        <div class="journey-map">
+            <div class="journey-header">
+                <h2>🗺️ Your Assessment Journey</h2>
+                <p>We're navigating this together</p>
+            </div>
+
+            <div class="journey-progress">
+                <svg class="progress-ring" width="120" height="120">
+                    <defs>
+                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#667eea"/>
+                            <stop offset="100%" style="stop-color:#764ba2"/>
+                        </linearGradient>
+                    </defs>
+                    <circle class="progress-circle progress-circle-bg" cx="60" cy="60" r="52"/>
+                    <circle class="progress-circle progress-circle-fill" cx="60" cy="60" r="52"
+                        stroke-dasharray="326.7" stroke-dashoffset="326.7" id="progressCircle"/>
+                </svg>
+                <div class="progress-text" id="progressPercent">11%</div>
+                <div class="progress-label">Journey Complete</div>
+            </div>
+
+            <div class="journey-stages">
+                <div class="journey-line"></div>
+
+                <div class="stage-item active">
+                    <div class="stage-marker">🏢</div>
+                    <div class="stage-content">
+                        <div class="stage-name">Understanding You</div>
+                        <div class="stage-description">Your business, location, and current state</div>
+                        <span class="stage-status">IN PROGRESS</span>
+                    </div>
+                </div>
+
+                <div class="stage-item upcoming">
+                    <div class="stage-marker">🗺️</div>
+                    <div class="stage-content">
+                        <div class="stage-name">Industry Landscape</div>
+                        <div class="stage-description">Trends, challenges, opportunities in your domain</div>
+                        <span class="stage-status">UPCOMING</span>
+                    </div>
+                </div>
+
+                <div class="stage-item upcoming">
+                    <div class="stage-marker">📊</div>
+                    <div class="stage-content">
+                        <div class="stage-name">Your Profile</div>
+                        <div class="stage-description">How you compare vs. industry benchmarks</div>
+                        <span class="stage-status">UPCOMING</span>
+                    </div>
+                </div>
+
+                <div class="stage-item upcoming">
+                    <div class="stage-marker">🎯</div>
+                    <div class="stage-content">
+                        <div class="stage-name">Success Factors</div>
+                        <div class="stage-description">What makes businesses like yours win</div>
+                        <span class="stage-status">UPCOMING</span>
+                    </div>
+                </div>
+
+                <div class="stage-item upcoming">
+                    <div class="stage-marker">🛤️</div>
+                    <div class="stage-content">
+                        <div class="stage-name">Your Roadmap</div>
+                        <div class="stage-description">Personalized 6-month success path</div>
+                        <span class="stage-status">UPCOMING</span>
+                    </div>
+                </div>
+
+                <div class="stage-item upcoming">
+                    <div class="stage-marker">🎯</div>
+                    <div class="stage-content">
+                        <div class="stage-name">Goals & Metrics</div>
+                        <div class="stage-description">Measurable targets with realistic timelines</div>
+                        <span class="stage-status">UPCOMING</span>
+                    </div>
+                </div>
+
+                <div class="stage-item upcoming">
+                    <div class="stage-marker">💰</div>
+                    <div class="stage-content">
+                        <div class="stage-name">Investment Plan</div>
+                        <div class="stage-description">Budget breakdown with expected ROI</div>
+                        <span class="stage-status">UPCOMING</span>
+                    </div>
+                </div>
+
+                <div class="stage-item upcoming">
+                    <div class="stage-marker">🤝</div>
+                    <div class="stage-content">
+                        <div class="stage-name">Partnership Model</div>
+                        <div class="stage-description">How we'll work together with Yashus</div>
+                        <span class="stage-status">UPCOMING</span>
+                    </div>
+                </div>
+
+                <div class="stage-item upcoming">
+                    <div class="stage-marker">📋</div>
+                    <div class="stage-content">
+                        <div class="stage-name">Report & Next Steps</div>
+                        <div class="stage-description">Full assessment + strategy call booking</div>
+                        <span class="stage-status">UPCOMING</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="journey-footer">
+                <p>
+                    <strong>Estimated Time:</strong> 8-10 minutes<br>
+                    <strong>Next Milestone:</strong> Industry Landscape Study
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // AI Context
+        const aiContext = {
+            currentStage: 1,
+            totalStages: 9,
+            industry: null,
+            selectedChallenges: []
+        };
+
+        // Industry configs
+        const industries = {
+            dental: {
+                matchCount: 47,
+                landscape: "The dental services market in India is growing at 15% annually, driven by rising health awareness and disposable incomes. However, 78% of local dental practices struggle with online visibility while corporate chains dominate digital search results.",
+                challenges: [
+                    { icon: "🔍", text: "Great word-of-mouth but patients can't find you on Google" },
+                    { icon: "🌐", text: "Website is outdated or loads too slowly" },
+                    { icon: "🏢", text: "Corporate dental chains outranking you online" },
+                    { icon: "📱", text: "No time to post consistently on social media" },
+                    { icon: "📅", text: "Patients want online booking but you don't offer it" },
+                    { icon: "⭐", text: "Competitors have 10x more Google reviews" }
+                ],
+                successStory: "Dr. Sharma's clinic in Pune had identical challenges - strong offline reputation but invisible online. We implemented local SEO, website optimization, and review generation. Result: New patient bookings went from 25/month to 82/month in 12 weeks (3.3x increase).",
+                projections: "Based on 47 similar dental practices: Month 2 → 20-30% more inquiries, Month 4 → 50-60% increase, Month 6 → 2-3x baseline, Month 12 → Sustainable growth engine",
+                journeyStages: [
+                    { icon: "🦷", name: "Your Practice Story", desc: "Current patient flow, locations, reputation" },
+                    { icon: "🏥", name: "Healthcare Market in Your City", desc: "What patients are searching for and who's winning" },
+                    { icon: "📊", name: "Patient Attraction Diagnosis", desc: "Where you rank vs. corporate chains nearby" },
+                    { icon: "⭐", name: "What Fills Appointment Books", desc: "Proven patient acquisition tactics from top clinics" },
+                    { icon: "📅", name: "Your 6-Month Patient Growth Plan", desc: "Month-by-month actions to double bookings" },
+                    { icon: "🎯", name: "Target: New Patients Per Month", desc: "Realistic goals based on your city size" },
+                    { icon: "💰", name: "Investment & Patient Value", desc: "Cost per new patient vs. lifetime revenue" },
+                    { icon: "🤝", name: "Yashus as Your Growth Partner", desc: "Who manages what, how we collaborate monthly" },
+                    { icon: "📋", name: "Your Practice Growth Blueprint", desc: "Full report + strategy call with dental specialist" }
+                ]
+            },
+            bakery: {
+                matchCount: 34,
+                landscape: "India's bakery market is projected to reach ₹12,000 crore by 2025, driven by urbanization and western food culture adoption. However, 82% of local bakeries face fierce competition from chain brands while struggling with inconsistent customer traffic.",
+                challenges: [
+                    { icon: "🔍", text: "Customers forget you exist between visits" },
+                    { icon: "📱", text: "No way to announce today's fresh specials instantly" },
+                    { icon: "🎂", text: "Missing cake orders because people can't find your number" },
+                    { icon: "⭐", text: "No Google reviews while Monginis has 50+" },
+                    { icon: "🌐", text: "Website shows last year's menu (or no website at all)" },
+                    { icon: "📅", text: "Catering inquiries come too late to prepare" }
+                ],
+                successStory: "Sweet Treats Bakery in Jaipur had the same issue - great products but only weekend crowds. We launched Instagram + WhatsApp ordering + Google optimization. Result: Weekday sales increased 3x, custom cake orders went from 8/month to 35/month.",
+                projections: "Based on 34 similar bakeries: Month 2 → 25-35% more daily customers, Month 4 → Predictable weekday traffic, Month 6 → 2.5x baseline revenue",
+                journeyStages: [
+                    { icon: "🍰", name: "Your Bakery's Current Recipe", desc: "Products, location, customer patterns" },
+                    { icon: "🏪", name: "Bakery Market in Your Area", desc: "Competition, pricing, what sells in your neighborhood" },
+                    { icon: "📊", name: "Your Shelf Space Visibility", desc: "How many customers can actually find you online" },
+                    { icon: "🎂", name: "What Makes Bakeries Rise", desc: "Tactics from bakeries with lines out the door" },
+                    { icon: "📅", name: "Your 6-Month Sales Growth Recipe", desc: "Daily, weekly, monthly actions to boost footfall" },
+                    { icon: "🎯", name: "Target: Daily Average Sales", desc: "Revenue goals by product category" },
+                    { icon: "💰", name: "Investment & Customer Value", desc: "Marketing cost vs. average transaction size" },
+                    { icon: "🤝", name: "Yashus as Your Growth Partner", desc: "Content calendar, promos, seasonal campaigns" },
+                    { icon: "📋", name: "Your Bakery Growth Blueprint", desc: "Full report + strategy call with retail specialist" }
+                ]
+            },
+            saas: {
+                matchCount: 52,
+                landscape: "India's SaaS market is growing at 30% CAGR with 1,000+ startups competing for attention. The challenge: 73% struggle with customer acquisition cost exceeding lifetime value, while top performers master product-led growth early.",
+                challenges: [
+                    { icon: "👥", text: "Traffic to your website but almost zero signups" },
+                    { icon: "📧", text: "Emails go to spam, cold outreach gets ignored" },
+                    { icon: "💰", text: "CAC is ₹8,000 but LTV is only ₹12,000" },
+                    { icon: "🔄", text: "Users sign up, ghost you after first login" },
+                    { icon: "📊", text: "No idea which acquisition channel actually works" },
+                    { icon: "⭐", text: "Competitors ranking higher for your keywords" }
+                ],
+                successStory: "InvoiceFlow (Series A SaaS) had 2.3% signup conversion and 18% activation. We implemented PLG tactics, onboarding optimization, and SEO for buyer-intent keywords. Result: 2.3% → 8.7% conversion, CAC dropped 62%, MRR doubled in 4 months.",
+                projections: "Based on 52 similar SaaS companies: Month 2 → 30-40% conversion lift, Month 4 → 50% CAC reduction, Month 6 → 2x MRR baseline",
+                journeyStages: [
+                    { icon: "⚡", name: "Your SaaS Current State", desc: "Product, stage, current metrics (signups, churn, MRR)" },
+                    { icon: "🚀", name: "SaaS Landscape in Your Category", desc: "Competition, pricing models, what's working" },
+                    { icon: "📊", name: "Your Growth Funnel Audit", desc: "Where you're leaking users (traffic→signup→activation)" },
+                    { icon: "🎯", name: "Product-Led Growth Playbook", desc: "Tactics from SaaS companies with 40%+ growth" },
+                    { icon: "📈", name: "Your 6-Month MRR Growth Plan", desc: "Acquisition, activation, retention milestones" },
+                    { icon: "🎯", name: "Target: ARR & Unit Economics", desc: "Revenue goals with healthy CAC:LTV ratio" },
+                    { icon: "💰", name: "Investment & CAC Payback", desc: "Marketing spend vs. customer acquisition cost" },
+                    { icon: "🤝", name: "Yashus as Your Growth Partner", desc: "Growth experiments, analytics, optimization sprints" },
+                    { icon: "📋", name: "Your SaaS Growth Blueprint", desc: "Full report + strategy call with SaaS specialist" }
+                ]
+            }
+        };
+
+        // Carousel state
+        const carouselState = {
+            currentIndex: 0,
+            charts: []
+        };
+
+        // Generate visual insights with charts
+        function generateVisualInsights(industry) {
+            const container = document.getElementById('visualInsights');
+            container.innerHTML = '';
+            carouselState.charts = [];
+            carouselState.currentIndex = 0xt: "Missing cake orders because people can't find your number" },
+                    { icon: "⭐", text: "No Google reviews while Monginis has 50+" },
+                    { icon: "🌐", text: "Website shows last year's menu (or no website at all)" },
+                    { icon: "📅", text: "Catering inquiries come too late to prepare" }
+                ],
+                successStory: "Sweet Treats Bakery in Jaipur had the same issue - great products but only weekend crowds. We launched Instagram + WhatsApp ordering + Google optimization. Result: Weekday sales increased 3x, custom cake orders went from 8/month to 35/month.",
+                projections: "Based on 34 similar bakeries: Month 2 → 25-35% more daily customers, Month 4 → Predictable weekday traffic, Month 6 → 2.5x baseline revenue",
+                journeyStages: [
+                    { icon: "🍰", name: "Your Bakery's Current Recipe", desc: "Products, location, customer patterns" },
+                    { icon: "🏪", name: "Bakery Market in Your Area", desc: "Competition, pricing, what sells in your neighborhood" },
+                    { icon: "📊", name: "Your Shelf Space Visibility", desc: "How many customers can actually find you online" },
+                    { icon: "🎂", name: "What Makes Bakeries Rise", desc: "Tactics from bakeries with lines out the door" },
+                    { icon: "📅", name: "Your 6-Month Sales Growth Recipe", desc: "Daily, weekly, monthly actions to boost footfall" },
+                    { icon: "🎯", name: "Target: Daily Average Sales", desc: "Revenue goals by product category" },
+                    { icon: "💰", name: "Investment & Customer Value", desc: "Marketing cost vs. average transaction size" },
+                    { icon: "🤝", name: "Yashus as Your Growth Partner", desc: "Content calendar, promos, seasonal campaigns" },
+                    { icon: "📋", name: "Your Bakery Growth Blueprint", desc: "Full report + strategy call with retail specialist" }
+                ]
+            },
+            saas: {
+                matchCount: 52,
+                landscape: "India's SaaS market is growing at 30% CAGR with 1,000+ startups competing for attention. The challenge: 73% struggle with customer acquisition cost exceeding lifetime value, while top performers master product-led growth early.",
+                challenges: [
+                    { icon: "👥", text: "Traffic to your website but almost zero signups" },
+                    { icon: "📧", text: "Emails go to spam, cold outreach gets ignored" },
+                    { icon: "💰", text: "CAC is ₹8,000 but LTV is only ₹12,000" },
+                    { icon: "🔄", text: "Users sign up, ghost you after first login" },
+                    { icon: "📊", text: "No idea which acquisition channel actually works" },
+                    { icon: "⭐", text: "Competitors ranking higher for your keywords" }
+                ],
+                successStory: "InvoiceFlow (Series A SaaS) had 2.3% signup conversion and 18% activation. We implemented PLG tactics, onboarding optimization, and SEO for buyer-intent keywords. Result: 2.3% → 8.7% conversion, CAC dropped 62%, MRR doubled in 4 months.",
+                projections: "Based on 52 similar SaaS companies: Month 2 → 30-40% conversion lift, Month 4 → 50% CAC reduction, Month 6 → 2x MRR baseline",
+                journeyStages: [
+                    { icon: "⚡", name: "Your SaaS Current State", desc: "Product, stage, current metrics (signups, churn, MRR)" },
+                    { icon: "🚀", name: "SaaS Landscape in Your Category", desc: "Competition, pricing models, what's working" },
+                    { icon: "📊", name: "Your Growth Funnel Audit", desc: "Where you're leaking users (traffic→signup→activation)" },
+                    { icon: "🎯", name: "Product-Led Growth Playbook", desc: "Tactics from SaaS companies with 40%+ growth" },
+                    { icon: "📈", name: "Your 6-Month MRR Growth Plan", desc: "Acquisition, activation, retention milestones" },
+                    { icon: "🎯", name: "Target: ARR & Unit Economics", desc: "Revenue goals with healthy CAC:LTV ratio" },
+                    { icon: "💰", name: "Investment & CAC Payback", desc: "Marketing spend vs. customer acquisition cost" },
+                    { icon: "🤝", name: "Yashus as Your Growth Partner", desc: "Growth experiments, analytics, optimization sprints" },
+                    { icon: "📋", name: "Your SaaS Growth Blueprint", desc: "Full report + strategy call with SaaS specialist" }
+                ]
+            }
+        };
+
+        // Transform journey map to industry vocabulary
+        function transformJourneyMap(stages) {
+            const stageItems = document.querySelectorAll('.stage-item');
+            stages.forEach((newStage, idx) => {
+                if (stageItems[idx]) {
+                    const marker = stageItems[idx].querySelector('.stage-marker');
+                    const name = stageItems[idx].querySelector('.stage-name');
+                    const desc = stageItems[idx].querySelector('.stage-description');
+                    
+                    // Animate the transformation
+                    stageItems[idx].style.opacity = '0.3';
+                    setTimeout(() => {
+                        if (idx === 0) {
+                            // Keep first stage marker as-is (currently active)
+                        } else {
+                            marker.textContent = newStage.icon;
+                        }
+                        name.textContent = newStage.name;
+                        desc.textContent = newStage.desc;
+                        stageItems[idx].style.opacity = '1';
+                    }, idx * 100);
+                }
+            });
+        }
+
+        // Generate visual insights with charts
+        function generateVisualInsights(industry) {
+            const container = document.getElementById('visualInsights');
+            container.innerHTML = '';
+
+            const chartConfigs = {
+                dental: [
+                    {
+                        type: 'bar',
+                        icon: '🏥',
+                        title: 'Where Dental Clinics Lose Patients',
+                        subtitle: 'Top reasons clinics like yours miss bookings',
+            
+            // Create all charts
+            configs.forEach((config, idx) => {
+                const chartDiv = createVisualChart(config, container);
+                carouselState.charts.push({ element: chartDiv, config: config });
+                if (idx === 0) chartDiv.classList.add('active');
+            });
+
+            // Setup carousel dots
+            const dotsContainer = document.getElementById('carouselDots');
+            dotsContainer.innerHTML = '';
+            configs.forEach((_, idx) => {
+                const dot = document.createElement('div');
+                dot.className = 'carousel-dot' + (idx === 0 ? ' active' : '');
+                dot.onclick = () => goToChart(idx);
+                dotsContainer.appendChild(dot);
+            });
+
+            // Setup nav buttons
+            document.getElementById('prevChart').onclick = () => goToChart(carouselState.currentIndex - 1);
+            document.getElementById('nextChart').onclick = () => goToChart(carouselState.currentIndex + 1);
+            
+            updateCarouselNav();
+
+            // Draw first chart
+            setTimeout(() => {
+                drawChart(carouselState.charts[0]);
+            }, 200);
+        }
+
+        function createVisualChart(config, container) {
+            const chartDiv = document.createElement('div');
+            chartDiv.className = 'visual-chart';
+
+            const header = `
+                <div class="chart-header">
+                    <div class="chart-icon">${config.icon}</div>
+                    <div class="chart-title">
+                        <h3>${config.title}</h3>
+                        <p>${config.subtitle}</p>
+                    </div>
+                </div>
+            `;
+
+            const canvasId = 'chart_' + Math.random().toString(36).substr(2, 9);
+            const canvas = `<canvas id="${canvasId}" class="chart-canvas" width="700" height="300"></canvas>`;
+            const empathy = `<div class="chart-empathy">${config.empathy}</div>`;
+
+            chartDiv.innerHTML = header + canvas + empathy;
+            chartDiv.dataset.canvasId = canvasId;
+            container.appendChild(chartDiv);
+
+            return chartDiv;
+        }
+
+        function goToChart(index) {
+            if (index < 0 || index >= carouselState.charts.length) return;
+
+            // Hide current
+            carouselState.charts[carouselState.currentIndex].element.classList.remove('active');
+
+            // Show new
+            carouselState.currentIndex = index;
+            const chartData = carouselState.charts[index];
+            chartData.element.classList.add('active');
+
+            // Update dots
+            document.querySelectorAll('.carousel-dot').forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === index);
+            });
+
+            // Draw chart if not drawn yet
+            const canvas = document.getElementById(chartData.element.dataset.canvasId);
+            if (canvas && !canvas.dataset.drawn) {
+                setTimeout(() => drawChart(chartData), 100);
+            }
+
+            updateCarouselNav();
+        }
+
+        function updateCarouselNav() {
+            document.getElementById('prevChart').disabled = carouselState.currentIndex === 0;
+            document.getElementById('nextChart').disabled = carouselState.currentIndex === carouselState.charts.length - 1;
+        }
+
+        function drawChart(chartData) {
+            const canvas = document.getElementById(chartData.element.dataset.canvasId);
+            if (!canvas || canvas.dataset.drawn) return;
+
+            const ctx = canvas.getContext('2d');
+            const config = chartData.config;
+
+            if (config.type === 'bar') drawBarChart(ctx, config.data);
+            else if (config.type === 'pie') drawPieChart(ctx, config.data);
+            else if (config.type === 'line') drawLineChart(ctx, config.data);
+            else if (config.type === 'funnel') drawFunnelChart(ctx, config.data);
+
+            canvas.dataset.drawn = 'true'         { label: "No online presence", value: 71, color: '#f97316' },
+                            { label: "Pricing pressure", value: 58, color: '#eab308' },
+                            { label: "High rent", value: 45, color: '#22c55e' }
+                        ],
+                        empathy: "82% struggle with <strong>weekday traffic</strong>. You're probably booming on weekends but empty Monday-Thursday. Good news: This pattern is the easiest to fix with daily social media + loyalty programs."
+                    }
+                ],
+                saas: [
+                    {
+                        type: 'funnel',
+                        icon: '📊',
+                        title: 'Where Your Signups Are Dying',
+                        subtitle: 'The SaaS conversion funnel breakdown',
+                        data: [
+                            { label: "Website Visitors", value: 1000, percent: 100, color: '#667eea' },
+                            { label: "Trial Signups", value: 23, percent: 2.3, color: '#764ba2' },
+                            { label: "Activated Users", value: 4, percent: 0.4, color: '#f472b6' },
+                            { label: "Paying Customers", value: 1, percent: 0.1, color: '#22c55e' }
+                        ],
+                        empathy: "Out of 1,000 visitors, <strong>only 1 becomes a paying customer</strong>. Top SaaS companies get 8-12%. You're not broken - you just need PLG tactics (product-led growth). I'll show you exactly what's leaking."
+                    },
+                    {
+                        type: 'bar',
+                        icon: '💸',
+                        title: 'SaaS Unit Economics: You vs. Healthy',
+                        subtitle: 'Why investors worry about your CAC:LTV ratio',
+                        data: [
+                            { label: "Your CAC", value: 8000, color: '#ef4444', comparison: 'Current' },
+                            { label: "Your LTV", value: 12000, color: '#f97316', comparison: 'Current' },
+                            { label: "Healthy CAC", value: 3500, color: '#22c55e', comparison: 'Target' },
+                            { label: "Healthy LTV", value: 18000, color: '#10b981', comparison: 'Target' }
+                        ],
+                        empathy: "Your CAC (₹8,000) is eating 67% of customer lifetime value. <strong>Healthy SaaS has CAC at 20-30% of LTV.</strong> This means you're 1 tweak away from profitability - let me show you what InvoiceFlow did (they had the same numbers)."
+                    }
+                ]
+            };
+
+            const configs = chartConfigs[industry];
+            configs.forEach((config, idx) => {
+                setTimeout(() => {
+                    createVisualChart(config, container);
+                }, idx * 300);
+            });
+        }
+
+        function createVisualChart(config, container) {
+            const chartDiv = document.createElement('div');
+            chartDiv.className = 'visual-chart';
+            chartDiv.style.opacity = '0';
+            chartDiv.style.transform = 'translateY(20px)';
+
+            const header = `
+                <div class="chart-header">
+                    <div class="chart-icon">${config.icon}</div>
+                    <div class="chart-title">
+                        <h3>${config.title}</h3>
+                        <p>${config.subtitle}</p>
+                    </div>
+                </div>
+            `;
+
+            const canvasId = 'chart_' + Math.random().toString(36).substr(2, 9);
+            const canvas = `<canvas id="${canvasId}" class="chart-canvas" width="700" height="300"></canvas>`;
+            const empathy = `<div class="chart-empathy">${config.empathy}</div>`;
+
+            chartDiv.innerHTML = header + canvas + empathy;
+            container.appendChild(chartDiv);
+
+            // Animate in
+            setTimeout(() => {
+                chartDiv.style.transition = 'all 0.5s ease';
+                chartDiv.style.opacity = '1';
+                chartDiv.style.transform = 'translateY(0)';
+            }, 50);
+
+            // Draw chart
+            setTimeout(() => {
+                const ctx = document.getElementById(canvasId).getContext('2d');
+                if (config.type === 'bar') drawBarChart(ctx, config.data);
+                else if (config.type === 'pie') drawPieChart(ctx, config.data);
+                else if (config.type === 'line') drawLineChart(ctx, config.data);
+                else if (config.type === 'funnel') drawFunnelChart(ctx, config.data);
+            }, 200);
+        }
+
+        function drawBarChart(ctx, data) {
+            const width = 700;
+            const height = 300;
+            const padding = 60;
+            const barWidth = (width - padding * 2) / data.length - 20;
+            const maxValue = Math.max(...data.map(d => d.value));
+
+            // Draw bars with animation
+            data.forEach((item, idx) => {
+                const barHeight = ((height - padding * 2) * item.value) / maxValue;
+                const x = padding + idx * (barWidth + 20);
+                const y = height - padding - barHeight;
+
+                // Bar
+                ctx.fillStyle = item.color;
+                ctx.fillRect(x, y, barWidth, barHeight);
+
+                // Value label
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.value + '%', x + barWidth / 2, y - 10);
+
+                // Category label
+                ctx.font = '12px Arial';
+                ctx.save();
+                ctx.translate(x + barWidth / 2, height - padding + 20);
+                const words = item.label.split(' ');
+                words.forEach((word, i) => {
+                    ctx.fillText(word, 0, i * 15);
+                });
+                ctx.restore();
+            });
+        }
+
+        function drawPieChart(ctx, data) {
+            const centerX = 350;
+            const centerY = 150;
+            const radius = 100;
+            let currentAngle = -Math.PI / 2;
+            const total = data.reduce((sum, d) => sum + d.value, 0);
+
+            data.forEach((item, idx) => {
+                const sliceAngle = (item.value / total) * Math.PI * 2;
+
+                // Draw slice
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = item.color;
+                ctx.fill();
+
+                // Label
+                const labelAngle = currentAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(labelAngle) * (radius + 40);
+                const labelY = centerY + Math.sin(labelAngle) * (radius + 40);
+                
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = labelX > centerX ? 'left' : 'right';
+                ctx.fillText(item.label, labelX, labelY);
+                ctx.font = '12px Arial';
+                ctx.fillText(item.value + '%', labelX, labelY + 18);
+
+                currentAngle += sliceAngle;
+            });
+        }
+
+        function drawLineChart(ctx, config) {
+            const width = 700;
+            const height = 300;
+            const padding = 60;
+            const labels = config.labels;
+            const stepX = (width - padding * 2) / (labels.length - 1);
+            const maxValue = Math.max(...config.datasets.flatMap(d => d.values));
+
+            // Draw grid
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (height - padding * 2) * i / 5;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+
+            // Draw datasets
+            config.datasets.forEach((dataset, dsIdx) => {
+                ctx.strokeStyle = dataset.color;
+                ctx.fillStyle = dataset.color;
+                ctx.lineWidth = 3;
+                
+                ctx.beginPath();
+                dataset.values.forEach((value, idx) => {
+                    const x = padding + idx * stepX;
+                    const y = height - padding - ((height - padding * 2) * value / maxValue);
+                    
+                    if (idx === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                    
+                    // Draw point
+                    ctx.fillRect(x - 4, y - 4, 8, 8);
+                });
+                ctx.stroke();
+
+                // Legend
+                ctx.fillStyle = dataset.color;
+                ctx.fillRect(padding, 20 + dsIdx * 25, 20, 15);
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = '13px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(dataset.label, padding + 30, 30 + dsIdx * 25);
+            });
+
+            // X-axis labels
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            labels.forEach((label, idx) => {
+                const x = padding + idx * stepX;
+                ctx.fillText(label, x, height - padding + 20);
+            });
+        }
+
+        function drawFunnelChart(ctx, data) {
+            const width = 700;
+            const height = 300;
+            const padding = 50;
+            const stageHeight = (height - padding * 2) / data.length;
+
+            data.forEach((stage, idx) => {
+                const y = padding + idx * stageHeight;
+                const widthPercent = stage.value / data[0].value;
+                const stageWidth = (width - padding * 2) * widthPercent;
+                const x = (width - stageWidth) / 2;
+
+                // Draw stage
+                ctx.fillStyle = stage.color;
+                ctx.fillRect(x, y, stageWidth, stageHeight - 10);
+
+                // Label
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(stage.label, width / 2, y + stageHeight / 2 - 10);
+                ctx.font = '14px Arial';
+                ctx.fillText(`${stage.value} (${stage.percent}%)`, width / 2, y + stageHeight / 2 + 10);
+            });
+        }
+
+        // Update progress
+        function updateProgress() {
+            const percent = Math.round((aiContext.currentStage / aiContext.totalStages) * 100);
+            document.getElementById('progressPercent').textContent = percent + '%';
+            
+            const circle = document.getElementById('progressCircle');
+            const circumference = 326.7;
+            const offset = circumference - (percent / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+
+            // Update journey stages
+            const stages = document.querySelectorAll('.stage-item');
+            stages.forEach((stage, idx) => {
+                if (idx < aiContext.currentStage - 1) {
+                    stage.className = 'stage-item completed';
+                    stage.querySelector('.stage-marker').textContent = '✓';
+                    stage.querySelector('.stage-status').textContent = 'COMPLETED';
+                } else if (idx === aiContext.currentStage - 1) {
+                    stage.className = 'stage-item active';
+                    stage.querySelector('.stage-status').textContent = 'IN PROGRESS';
+                } else {
+                    stage.className = 'stage-item upcoming';
+                    stage.querySelector('.stage-status').textContent = 'UPCOMING';
+                }
+            });
+        }
+
+        function goToStage(stageNum) {
+            document.querySelectorAll('.conversation-stage').forEach(stage => stage.classList.remove('active'));
+            document.getElementById(`stage${stageNum}`).classList.add('active');
+            aiContext.currentStage = stageNum;
+            updateProgress();
+        }
+
+        // Stage 1: Business input
+        const businessInput = document.getElementById('businessInput');
+        const continueBtn1 = document.getElementById('continueBtn1');
+        
+        if (businessInput && continueBtn1) {
+            businessInput.addEventListener('input', (e) => {
+                const value = e.target.value.trim();
+                console.log('Input length:', value.length);
+                continueBtn1.disabled = value.length < 10;
+            });
+            
+            // Also check on page load in case browser auto-fills
+            if (businessInput.value.trim().length >= 10) {
+                continueBtn1.disabled = false;
+            }
+        }
+
+        document.getElementById('continueBtn1').addEventListener('click', () => {
+            const input = document.getElementById('businessInput').value;
+            document.getElementById('businessEcho').textContent = input;
+            
+            // Detect industry (simplified)
+            if (input.toLowerCase().includes('dental') || input.toLowerCase().includes('clinic') || input.toLowerCase().includes('doctor')) {
+                aiContext.industry = 'dental';
+            } else if (input.toLowerCase().includes('bakery') || input.toLowerCase().includes('cake') || input.toLowerCase().includes('pastry')) {
+                aiContext.industry = 'bakery';
+            } else if (input.toLowerCase().includes('saas') || input.toLowerCase().includes('software') || input.toLowerCase().includes('app')) {
+                aiContext.industry = 'saas';
+            } else {
+                aiContext.industry = 'dental'; // Default for demo
+            }
+
+            const config = industries[aiContext.industry];
+            document.getElementById('matchCountText').textContent = `${config.matchCount} similar businesses`;
+
+            // TRANSFORM JOURNEY MAP TO INDUSTRY VOCABULARY
+            transformJourneyMap(config.journeyStages);
+
+            // GENERATE VISUAL INSIGHTS (NO PLAIN TEXT!)
+            generateVisualInsights(aiContext.industry);
+
+            // Generate challenges
+            const grid = document.getElementById('challengeGrid');
+            grid.innerHTML = config.challenges.map((ch, idx) => `
+                <div class="pattern-card" data-idx="${idx}">
+                    <div class="pattern-icon">${ch.icon}</div>
+                    <div class="pattern-text">${ch.text}</div>
+                    <div class="pattern-check">✓</div>
+                </div>
+            `).join('');
+
+            grid.querySelectorAll('.pattern-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    const selected = grid.querySelectorAll('.pattern-card.selected').length;
+                    document.getElementById('continueBtn2').disabled = selected < 2;
+                });
+            });
+
+            goToStage(2);
+        });
+
+        // Continue buttons
+        document.getElementById('continueBtn2').addEventListener('click', () => {
+            const count = document.querySelectorAll('.pattern-card.selected').length;
+            document.getElementById('selectedCount').textContent = count;
+            document.getElementById('profileInsight').textContent = 
+                `You selected ${count} out of 6 challenges. This pattern indicates you're at the "Offline Success, Online Invisibility" stage - strong service delivery but weak digital presence. This is actually the EASIEST pattern to fix because your foundation (customer satisfaction) is solid.`;
+            goToStage(3);
+        });
+
+        document.getElementById('continueBtn3').addEventListener('click', () => {
+            const config = industries[aiContext.industry];
+            document.getElementById('successFactors').textContent = 
+                "Successful businesses in your position focus on: (1) Local SEO first (60% of new patients), (2) Website speed & mobile optimization (45% conversion lift), (3) Review generation (3x trust factor). The sequence matters - visibility before conversion.";
+            document.getElementById('successStory').textContent = config.successStory;
+            goToStage(4);
+        });
+
+        document.getElementById('continueBtn4').addEventListener('click', () => {
+            document.getElementById('roadmapContent').innerHTML = `
+                <div class="insight-box">
+                    <h4>Phase 1: Months 1-2 - Foundation</h4>
+                    <p>Fix Google Business Profile, website speed, basic SEO. Expected: 20-30% more inquiries.</p>
+                </div>
+                <div class="insight-box">
+                    <h4>Phase 2: Months 3-4 - Conversion</h4>
+                    <p>Online booking, landing page optimization, review system. Expected: 50-60% increase.</p>
+                </div>
+                <div class="insight-box">
+                    <h4>Phase 3: Months 5-6 - Scale</h4>
+                    <p>Content marketing, social proof, referral system. Expected: 2-3x baseline.</p>
+                </div>
+            `;
+            goToStage(5);
+        });
+
+        document.getElementById('continueBtn5').addEventListener('click', () => {
+            const config = industries[aiContext.industry];
+            document.getElementById('projections').textContent = config.projections;
+            goToStage(6);
+        });
+
+        document.getElementById('continueBtn6').addEventListener('click', () => {
+            document.getElementById('investmentContent').innerHTML = `
+                <div class="insight-box">
+                    <h4>Phase 1: ₹25,000/month</h4>
+                    <p>Foundation setup. ROI timeline: 2-3 months to break even.</p>
+                </div>
+                <div class="insight-box">
+                    <h4>Phase 2: ₹35,000/month</h4>
+                    <p>Optimization & conversion. ROI timeline: 3-4 months cumulative.</p>
+                </div>
+                <div class="insight-box">
+                    <h4>Phase 3: ₹50,000/month</h4>
+                    <p>Scale & automation. ROI timeline: Full payback by month 6.</p>
+                </div>
+            `;
+            goToStage(7);
+        });
+
+        document.getElementById('continueBtn7').addEventListener('click', () => {
+            document.getElementById('teamInfo').textContent = 
+                "You'll work with: (1) Account Manager - your main point of contact, monthly strategy calls, (2) SEO Specialist - technical optimization, (3) Content Creator - website copy & social posts, (4) AI Agents - automated execution of repetitive tasks. Monthly check-ins + real-time dashboard access.";
+            goToStage(8);
+        });
+
+        document.getElementById('continueBtn8').addEventListener('click', () => {
+            goToStage(9);
+        });
+
+        // Initialize
+        updateProgress();
+    </script>
+</body>
+</html>

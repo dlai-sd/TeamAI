@@ -1,0 +1,159 @@
+{
+  "version": "1.0",
+  "description": "Chapter configuration - UI reads this to know what to render",
+  "chapters": [
+    {
+      "id": "chapter_1",
+      "order": 1,
+      "title": "WHO ARE YOU?",
+      "subtitle": "Let's discover your digital identity",
+      "persona": "investigator",
+      "duration_estimate": "3-5 min",
+      "required": true,
+      "api_endpoints": {
+        "init": "/api/v1/assessment/{id}/identify",
+        "candidates": "/api/v1/assessment/{id}/candidates",
+        "confirm": "/api/v1/assessment/{id}/confirm-identity"
+      },
+      "ui_hints": {
+        "layout": "centered_form",
+        "primary_color": "#1E40AF",
+        "animation": "fade_in",
+        "mobile_optimized": true
+      }
+    },
+    {
+      "id": "chapter_2",
+      "order": 2,
+      "title": "YOUR DIGITAL UNIVERSE",
+      "subtitle": "Discovering your digital footprint...",
+      "persona": "investigator",
+      "duration_estimate": "8-12 min",
+      "required": true,
+      "api_endpoints": {
+        "start_discovery": "/api/v1/assessment/{id}/discover",
+        "stream": "/api/v1/assessment/{id}/discovery-stream",
+        "results": "/api/v1/assessment/{id}/discoveries"
+      },
+      "ui_hints": {
+        "layout": "live_feed",
+        "primary_color": "#1E40AF",
+        "animation": "slide_up",
+        "show_progress": true
+      }
+    },
+    {
+      "id": "chapter_3",
+      "order": 3,
+      "title": "THE MONEY STORY",
+      "subtitle": "Understanding your financials",
+      "persona": "cfo",
+      "duration_estimate": "6-8 min",
+      "required": false,
+      "skip_condition": "revenue < 5000000",
+      "api_endpoints": {
+        "financial_data": "/api/v1/assessment/{id}/financials",
+        "market_analysis": "/api/v1/assessment/{id}/market-opportunity"
+      },
+      "ui_hints": {
+        "layout": "dashboard",
+        "primary_color": "#059669",
+        "animation": "zoom_in",
+        "charts": true
+      }
+    },
+    {
+      "id": "chapter_4",
+      "order": 4,
+      "title": "THE MIRROR",
+      "subtitle": "Your digital health checkup",
+      "persona": "doctor",
+      "duration_estimate": "5-7 min",
+      "required": true,
+      "api_endpoints": {
+        "scores": "/api/v1/assessment/{id}/mirror-score"
+      },
+      "ui_hints": {
+        "layout": "scorecard",
+        "primary_color": "#7C3AED",
+        "animation": "radial_reveal",
+        "show_dimensions": true
+      }
+    },
+    {
+      "id": "chapter_5",
+      "order": 5,
+      "title": "WHERE DO YOU WANT TO GO?",
+      "subtitle": "Setting your championship goal",
+      "persona": "coach",
+      "duration_estimate": "6-8 min",
+      "required": true,
+      "api_endpoints": {
+        "set_goal": "/api/v1/assessment/{id}/goal",
+        "milestones": "/api/v1/assessment/{id}/milestones"
+      },
+      "ui_hints": {
+        "layout": "interactive_slider",
+        "primary_color": "#EA580C",
+        "animation": "bounce",
+        "interactive": true
+      }
+    },
+    {
+      "id": "chapter_6",
+      "order": 6,
+      "title": "THE REALITY CHECK",
+      "subtitle": "Investment analysis",
+      "persona": "consultant",
+      "duration_estimate": "8-10 min",
+      "required": true,
+      "api_endpoints": {
+        "investment": "/api/v1/assessment/{id}/investment",
+        "what_if": "/api/v1/assessment/{id}/what-if"
+      },
+      "ui_hints": {
+        "layout": "table_with_sliders",
+        "primary_color": "#1F2937",
+        "animation": "fade",
+        "interactive": true
+      }
+    },
+    {
+      "id": "chapter_7",
+      "order": 7,
+      "title": "THE BLUEPRINT",
+      "subtitle": "Your 90-day roadmap",
+      "persona": "consultant",
+      "duration_estimate": "10-12 min",
+      "required": true,
+      "api_endpoints": {
+        "roadmap": "/api/v1/assessment/{id}/roadmap"
+      },
+      "ui_hints": {
+        "layout": "gantt_timeline",
+        "primary_color": "#1F2937",
+        "animation": "sequential_reveal",
+        "scrollable": true
+      }
+    },
+    {
+      "id": "chapter_8",
+      "order": 8,
+      "title": "THE CELEBRATION",
+      "subtitle": "Visualizing your success",
+      "persona": "visionary",
+      "duration_estimate": "5-7 min",
+      "required": true,
+      "api_endpoints": {
+        "complete": "/api/v1/assessment/{id}/complete",
+        "share": "/api/v1/assessment/{id}/share"
+      },
+      "ui_hints": {
+        "layout": "immersive_scene",
+        "primary_color": "#F59E0B",
+        "animation": "cinematic_fade",
+        "show_cta": true
+      }
+    }
+  ]
+}
